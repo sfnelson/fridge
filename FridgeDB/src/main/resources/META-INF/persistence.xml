@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+        http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd" version="1.0">
+
+    <!-- JPA Persistence Unit for Fridge -->
+    <persistence-unit name="FridgeDB" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+        <!-- JPA entities must be registered here -->
+        <class>memphis.fridge.domain.Nonce</class>
+
+        <properties>
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge"/>
+            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+        </properties>
+    </persistence-unit>
+
+    <!-- JPA Persistence Unit for Testing -->
+    <persistence-unit name="TestFridgeDB" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+        <!-- JPA entities must be registered here -->
+        <class>memphis.fridge.domain.Nonce</class>
+
+        <properties>
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge-test"/>
+            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>

@@ -2,6 +2,8 @@ package memphis.fridge.ioc;
 
 import java.lang.annotation.*;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Logger;
 
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.UnitOfWork;
@@ -58,7 +60,7 @@ public class GuiceJPATestRunner extends GuiceTestRunner {
 		if (method.getAnnotation(Rollback.class) != null
 				&& method.getAnnotation(Test.class) != null) {
 			RollbackStatement rs = injector.getInstance(RollbackStatement.class);
-			rs.setDelegate(result);
+			rs.setDelegate(result, method.getMethod());
 			return rs;
 		} else {
 			return result;
@@ -67,6 +69,8 @@ public class GuiceJPATestRunner extends GuiceTestRunner {
 
 	static class RollbackStatement extends Statement {
 
+		private final Logger log = Logger.getLogger(GuiceJPATestRunner.class.getSimpleName());
+
 		@Inject
 		UnitOfWork context;
 
@@ -74,22 +78,32 @@ public class GuiceJPATestRunner extends GuiceTestRunner {
 		Provider<EntityManager> em;
 
 		Statement delegate;
+		Method method;
 
-		public void setDelegate(Statement delegate) {
+		public void setDelegate(Statement delegate, Method method) {
 			this.delegate = delegate;
+			this.method = method;
 		}
 
 		@Override
 		public void evaluate() throws Throwable {
+			log.entering(method.getDeclaringClass().getSimpleName(), method.getName());
+
 			context.begin();
+			try {
+				EntityTransaction tx = em.get().getTransaction();
+				if (!tx.isActive()) tx.begin();
+				tx.setRollbackOnly();
+				try {
+					delegate.evaluate();
+				} finally {
+					tx.rollback();
+				}
+			} finally {
+				context.end();
+				log.exiting(method.getDeclaringClass().getSimpleName(), method.getName());
+			}
 
-			EntityTransaction tx = em.get().getTransaction();
-			if (!tx.isActive()) tx.begin();
-			tx.setRollbackOnly();
-			delegate.evaluate();
-			tx.rollback();
-
-			context.end();
 		}
 	}
 }

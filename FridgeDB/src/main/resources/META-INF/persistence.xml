@@ -10,6 +10,7 @@
 
         <!-- JPA entities must be registered here -->
         <class>memphis.fridge.domain.Nonce</class>
+        <class>memphis.fridge.domain.User</class>
 
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge"/>
@@ -23,6 +24,7 @@
 
         <!-- JPA entities must be registered here -->
         <class>memphis.fridge.domain.Nonce</class>
+        <class>memphis.fridge.domain.User</class>
 
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge-test"/>

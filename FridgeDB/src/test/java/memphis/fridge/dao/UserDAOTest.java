@@ -1,10 +1,7 @@
 package memphis.fridge.dao;
 
-import java.security.MessageDigest;
-
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.xml.bind.DatatypeConverter;
 import memphis.fridge.domain.User;
 import memphis.fridge.ioc.GuiceJPATestRunner;
 import memphis.fridge.ioc.GuiceTestRunner;
@@ -12,6 +9,7 @@ import memphis.fridge.ioc.TestModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static memphis.fridge.utils.CryptUtils.md5;
 import static org.junit.Assert.*;
 
 /**
@@ -65,23 +63,6 @@ public class UserDAOTest {
 		String password = users.get().getPassword("foo");
 
 		assertEquals(e.getPassword(), password);
-	}
-
-	@Test
-	@GuiceJPATestRunner.Rollback
-	public void testSign() throws Exception {
-		String cnonce = "5343a3ce73gi79bf437e";
-		int timestamp = 1348922421;
-		String username = "foo";
-		String hmac = "6272b3ac2866224a3058d051d56e130a";
-		String password = md5("password");
-
-		assertEquals(hmac, users.get().sign(password, cnonce, timestamp, username));
-	}
-
-	private String md5(String message) throws Exception {
-		MessageDigest md = MessageDigest.getInstance("MD5");
-		return DatatypeConverter.printHexBinary(md.digest(message.getBytes("CP1252"))).toLowerCase();
 	}
 
 	private User createFooUser() throws Exception {

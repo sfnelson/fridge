@@ -3,9 +3,7 @@ package memphis.fridge.domain;
 import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -51,8 +49,9 @@ public class User {
 
 	@Nullable
 	@Size(max = 20)
-	@Column(name = "sponsor", length = 20, nullable = true)
-	private String sponsor;
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "sponsor", referencedColumnName = "username")
+	private User sponsor;
 
 	@NotNull
 	@Column(name = "enabled", nullable = false)
@@ -141,11 +140,11 @@ public class User {
 		isGrad = grad;
 	}
 
-	public String getSponsor() {
+	public User getSponsor() {
 		return sponsor;
 	}
 
-	public void setSponsor(String sponsor) {
+	public void setSponsor(User sponsor) {
 		this.sponsor = sponsor;
 	}
 

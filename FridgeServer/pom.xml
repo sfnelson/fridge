@@ -5,13 +5,27 @@
     <parent>
         <artifactId>Fridge</artifactId>
         <groupId>memphis.fridge</groupId>
-        <version>1.0</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>FridgeServer</artifactId>
     <packaging>war</packaging>
+
+    <properties>
+        <gwt.version>2.5.0-rc1</gwt.version>
+        <gwt.style>PRETTY</gwt.style>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
+
+        <dependency>
+            <groupId>memphis.fridge</groupId>
+            <artifactId>FridgeDB</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-servlet</artifactId>
@@ -28,11 +42,6 @@
             <version>13.0.1</version>
         </dependency>
         <dependency>
-            <groupId>memphis.fridge</groupId>
-            <artifactId>FridgeDB</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.8.2</version>
@@ -42,6 +51,61 @@
             <artifactId>easymock</artifactId>
             <version>3.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
+        </dependency>
+
+        <!-- gwt -->
+
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+            <version>${gwt.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.gwt.inject</groupId>
+            <artifactId>gin</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava-gwt</artifactId>
+            <version>13.0.1</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <version>${gwt.version}</version>
+                <configuration>
+                    <module>memphis.fridge.FridgeClient</module>
+                    <runTarget>/index.html</runTarget>
+                    <strict>true</strict>
+                    <logLevel>INFO</logLevel>
+                    <style>${gwt.style}</style>
+                    <copyWebapp>true</copyWebapp>
+                    <compileReport>false</compileReport>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>gwtcompile</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

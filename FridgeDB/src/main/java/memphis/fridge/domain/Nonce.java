@@ -1,7 +1,6 @@
 package memphis.fridge.domain;
 
 import java.util.Date;
-import java.util.Random;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -19,19 +18,6 @@ import javax.validation.constraints.NotNull;
 public class Nonce {
 
 	public static final int VALID_PERIOD = 600; // 10 minutes
-	public static final String NONCE_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	public static final int NONCE_LENGTH = 20;
-
-	private static final Random RAND = new Random();
-
-	public static String createToken() {
-		StringBuilder s = new StringBuilder();
-		for (int i = 0; i < 20; i++) {
-			int pos = Math.abs(RAND.nextInt()) % NONCE_CHARS.length();
-			s.append(NONCE_CHARS.charAt(pos));
-		}
-		return s.toString();
-	}
 
 	@Id
 	@NotNull

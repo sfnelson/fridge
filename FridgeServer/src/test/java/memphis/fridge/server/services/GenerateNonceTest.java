@@ -1,15 +1,15 @@
-package memphis.fridge.server.rpc;
+package memphis.fridge.server.services;
 
 import java.util.Date;
 
 import memphis.fridge.dao.NonceDAO;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Nonce;
+import memphis.fridge.server.io.ResponseSerializer;
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
 import static org.easymock.EasyMock.*;
 
 /**
@@ -41,19 +41,23 @@ public class GenerateNonceTest {
 		String hmac = "HMAC'ED";
 		Nonce newNonce = new Nonce(snonce, cnonce, new Date());
 
+		ResponseSerializer resp = EasyMock.createMock(ResponseSerializer.class);
+
 		// setup
-		reset(users, nonces);
+		reset(users, nonces, resp);
 		users.validateHMAC(username, hmac, cnonce, timestamp, username);
 		expect(nonces.generateNonce(cnonce, timestamp)).andReturn(newNonce);
 		expect(users.createHMAC(username, snonce, cnonce)).andReturn(hmac);
 
+		resp.visitString("snonce", snonce);
+		resp.visitString("hmac", hmac);
+
 		// test
-		replay(users, nonces);
-		Response<String> resp = service.generateNonce(cnonce, timestamp, username, hmac);
+		replay(users, nonces, resp);
+		service.generateNonce(cnonce, timestamp, username, hmac).visitResponse(resp);
 
 		// verify
-		assertEquals(hmac, resp.getHmac());
-		assertEquals(snonce, resp.getResult());
-		verify(users, nonces);
+		verify(users, nonces, resp);
+
 	}
 }

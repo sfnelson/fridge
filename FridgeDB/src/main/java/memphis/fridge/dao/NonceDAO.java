@@ -9,6 +9,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import memphis.fridge.domain.Nonce;
 import memphis.fridge.exceptions.FridgeException;
+import memphis.fridge.utils.CryptUtils;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -38,7 +39,7 @@ public class NonceDAO {
 		}
 
 		// generate new server nonce
-		String snonce = Nonce.createToken();
+		String snonce = CryptUtils.generateNonceToken();
 
 		// create and store nonce
 		Nonce nonce = new Nonce(snonce, cnonce, new Date());

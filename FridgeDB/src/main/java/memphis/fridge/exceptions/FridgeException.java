@@ -6,7 +6,14 @@ package memphis.fridge.exceptions;
  */
 public class FridgeException extends RuntimeException {
 
-	private final int code;
+	private int code;
+
+	protected FridgeException() {
+	}
+
+	protected FridgeException(String message, Throwable ex) {
+		super(message, ex);
+	}
 
 	public FridgeException(int code, String message) {
 		super(message);

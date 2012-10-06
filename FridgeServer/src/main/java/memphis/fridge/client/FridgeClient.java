@@ -19,15 +19,26 @@ public class FridgeClient extends AbstractActivity implements EntryPoint {
 	private final ClientInjector injector = GWT.create(ClientInjector.class);
 
 	public void onModuleLoad() {
-		this.start(new AcceptsOneWidget() {
-			public void setWidget(IsWidget w) {
-				RootPanel.get().clear();
-				RootPanel.get().add(w);
-			}
-		}, injector.getEventBus());
+		this.start(new Root(), injector.getEventBus());
+		injector.getProductsList().start(new Root(), injector.getEventBus());
 	}
 
 	public void start(AcceptsOneWidget panel, EventBus eventBus) {
 		injector.getLoginActivity().start(panel, eventBus);
+	}
+
+	private static class Root implements AcceptsOneWidget {
+		private IsWidget w;
+
+		public void setWidget(IsWidget w) {
+			clear();
+			RootPanel.get().add(w);
+			this.w = w;
+		}
+
+		public void clear() {
+			if (this.w != null) RootPanel.get().remove(this.w);
+			this.w = null;
+		}
 	}
 }

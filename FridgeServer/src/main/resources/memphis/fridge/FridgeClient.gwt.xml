@@ -7,8 +7,10 @@
     <inherits name='com.google.gwt.inject.Inject'/>
     <inherits name='com.google.common.collect.Collect'/>
     <inherits name="com.google.gwt.http.HTTP"/>
+    <inherits name="com.google.gwt.logging.Logging"/>
 
     <set-configuration-property name="UiBinder.useSafeHtmlTemplates" value="true"/>
+    <set-property name="gwt.logging.popupHandler" value="DISABLED"/>
 
     <entry-point class='memphis.fridge.client.FridgeClient'/>
 

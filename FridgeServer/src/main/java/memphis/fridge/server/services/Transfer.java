@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.InvalidAmountException;
-import memphis.fridge.server.io.Response;
+import memphis.fridge.server.io.HMACResponse;
 import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.utils.CurrencyUtils;
 
@@ -21,7 +21,7 @@ public class Transfer {
 	@Inject
 	UserDAO users;
 
-	public Response transfer(String snonce, String fromUser, String toUser, int amount, String hmac) {
+	public HMACResponse transfer(String snonce, String fromUser, String toUser, int amount, String hmac) {
 		users.validateHMAC(fromUser, hmac, snonce, fromUser, toUser, amount);
 		users.checkValidUser(toUser);
 
@@ -38,7 +38,7 @@ public class Transfer {
 		return new TransferResponse(fromUser, snonce, toCents(balance));
 	}
 
-	private class TransferResponse extends Response {
+	private class TransferResponse extends HMACResponse {
 		int balance;
 
 		private TransferResponse(String username, String snonce, int balance) {
@@ -46,7 +46,7 @@ public class Transfer {
 			this.balance = balance;
 		}
 
-		public void visitParams(ResponseSerializer visitor) {
+		public void visitParams(ResponseSerializer.ObjectSerializer visitor) {
 			visitor.visitInteger("balance", balance);
 		}
 	}

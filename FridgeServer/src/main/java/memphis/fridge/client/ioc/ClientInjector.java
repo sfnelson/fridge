@@ -5,6 +5,7 @@ import com.google.gwt.inject.client.GinModules;
 import com.google.gwt.inject.client.Ginjector;
 
 import memphis.fridge.client.activities.LoginActivity;
+import memphis.fridge.client.activities.ShowProductListActivity;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -15,4 +16,6 @@ public interface ClientInjector extends Ginjector {
 	EventBus getEventBus();
 
 	LoginActivity getLoginActivity();
+
+	ShowProductListActivity getProductsList();
 }

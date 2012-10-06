@@ -10,7 +10,7 @@ import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.InsufficientStockException;
 import memphis.fridge.exceptions.InvalidProductException;
-import memphis.fridge.server.io.Response;
+import memphis.fridge.server.io.HMACResponse;
 import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.utils.Pair;
 
@@ -38,7 +38,7 @@ public class Purchase {
 	CreditLogDAO creditLog;
 
 	@Transactional
-	public Response purchase(String snonce, String username, List<Pair<String, Integer>> items, String hmac) {
+	public HMACResponse purchase(String snonce, String username, List<Pair<String, Integer>> items, String hmac) {
 		users.validateHMAC(username, hmac, snonce, username, items);
 
 		User user = users.retrieveUser(username);
@@ -62,7 +62,7 @@ public class Purchase {
 			int count = item.getValue();
 			if (product == null) throw new InvalidProductException();
 			if (product.getInStock() < count) throw new InsufficientStockException();
-			products.removeProduct(product, count);
+			products.consumeProduct(product, count);
 
 			BigDecimal cost = calculateCost(product, count);
 			BigDecimal surplus = calculateMarkup(product, count, tax);
@@ -95,7 +95,7 @@ public class Purchase {
 		return sum;
 	}
 
-	private class PurchaseResponse extends Response {
+	private class PurchaseResponse extends HMACResponse {
 		int balance;
 		int order_total;
 
@@ -106,7 +106,7 @@ public class Purchase {
 		}
 
 		@Override
-		protected void visitParams(ResponseSerializer visitor) {
+		protected void visitParams(ResponseSerializer.ObjectSerializer visitor) {
 			visitor.visitInteger("balance", balance);
 			visitor.visitInteger("order_total", order_total);
 		}

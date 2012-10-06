@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.google.inject.persist.Transactional;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -18,7 +19,7 @@ import memphis.fridge.utils.CryptUtils;
 public class NonceDAO {
 
 	@Inject
-	EntityManager em;
+	Provider<EntityManager> em;
 
 	@Transactional
 	public Nonce generateNonce(String cnonce, int timestamp) {
@@ -32,7 +33,7 @@ public class NonceDAO {
 		}
 
 		// check client nonce doesn't already exist (replay)
-		TypedQuery<Long> q = em.createNamedQuery("Nonce.findExisting", Long.class);
+		TypedQuery<Long> q = em.get().createNamedQuery("Nonce.findExisting", Long.class);
 		q.setParameter("cnonce", cnonce);
 		if (0 != q.getSingleResult()) {
 			throw new FridgeException(2, "Invalid client nonce.");
@@ -43,13 +44,13 @@ public class NonceDAO {
 
 		// create and store nonce
 		Nonce nonce = new Nonce(snonce, cnonce, new Date());
-		em.persist(nonce);
+		em.get().persist(nonce);
 
 		return nonce;
 	}
 
 	private void expireOldNonces() {
-		Query q = em.createNativeQuery(
+		Query q = em.get().createNativeQuery(
 				"DELETE FROM nonces WHERE created_at > now() - interval '10 minutes'");
 		q.executeUpdate();
 	}

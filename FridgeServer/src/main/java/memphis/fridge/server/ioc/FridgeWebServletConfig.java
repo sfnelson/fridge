@@ -2,10 +2,13 @@ package memphis.fridge.server.ioc;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.persist.PersistFilter;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.servlet.GuiceServletContextListener;
-import com.google.inject.servlet.ServletModule;
-import memphis.fridge.server.RestServlet;
+import com.sun.jersey.guice.JerseyServletModule;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import memphis.fridge.server.GenerateNonceRequest;
+import memphis.fridge.server.GetProductsRequest;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -14,12 +17,16 @@ import memphis.fridge.server.RestServlet;
 public class FridgeWebServletConfig extends GuiceServletContextListener {
 	@Override
 	protected Injector getInjector() {
-		return Guice.createInjector(new ServletModule() {
+		return Guice.createInjector(new JerseyServletModule() {
 			@Override
 			protected void configureServlets() {
 				install(new JpaPersistModule("FridgeDB"));
 
-				serve("/fridge/rest/*").with(RestServlet.class);
+				bind(GenerateNonceRequest.class);
+				bind(GetProductsRequest.class);
+
+				filter("/fridge/rest/*").through(PersistFilter.class);
+				serve("/fridge/rest/*").with(GuiceContainer.class);
 			}
 		});
 	}

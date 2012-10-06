@@ -46,7 +46,7 @@ public class RequestNonce implements RequestCallback {
 
 	public static SafeUri createRequest(String cnonce, int timestamp, String username, String hmac) {
 		return UriUtils.fromSafeConstant(
-				"/fridge/rest/request_nonce"
+				"/fridge/rest/generate_nonce/xml"
 						+ "?cnonce=" + UriUtils.encode(cnonce)
 						+ "&timestamp=" + UriUtils.encode(String.valueOf(timestamp))
 						+ "&username=" + UriUtils.encode(username)

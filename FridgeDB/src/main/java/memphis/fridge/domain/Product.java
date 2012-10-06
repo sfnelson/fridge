@@ -9,7 +9,12 @@ import javax.validation.constraints.NotNull;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 30/09/12
  */
-@Entity(name = "product")
+@Entity
+@Table(name = "product")
+@NamedQueries({
+		@NamedQuery(name = "Products.findEnabled",
+				query = "SELECT p FROM Product p WHERE p.enabled = true")
+})
 public class Product {
 
 	@Id

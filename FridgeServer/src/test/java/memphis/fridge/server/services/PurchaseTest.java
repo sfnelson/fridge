@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.*;
-import memphis.fridge.server.io.Response;
+import memphis.fridge.server.io.HMACResponse;
 import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.server.ioc.MockInjectingRunner;
 import memphis.fridge.server.ioc.MockInjectingRunner.Mock;
@@ -43,7 +43,7 @@ public class PurchaseTest {
 
 	@Inject
 	@Mock
-	ResponseSerializer response;
+	ResponseSerializer.ObjectSerializer response;
 
 	@Inject
 	MockManager mocks;
@@ -100,7 +100,7 @@ public class PurchaseTest {
 
 		expectUserInit(isGrad);
 		expect(p.products.findProduct("CC")).andReturn(coke);
-		p.products.removeProduct(coke, ORDER_NUM_COKE);
+		p.products.consumeProduct(coke, ORDER_NUM_COKE);
 
 		BigDecimal num = BigDecimal.valueOf(ORDER_NUM_COKE);
 		p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad));
@@ -154,9 +154,9 @@ public class PurchaseTest {
 		mocks.replay();
 
 		try {
-			Response r = p.purchase(SNONCE, USERNAME, order(), HMAC);
+			HMACResponse r = p.purchase(SNONCE, USERNAME, order(), HMAC);
 			assertNotNull(r);
-			r.visitResponse(response);
+			r.visit(response);
 		} catch (FridgeException ex) {
 			mocks.verify();
 			throw ex;
@@ -176,12 +176,12 @@ public class PurchaseTest {
 	private void expectProductUpdates(boolean isGrad) {
 		Product coke = coke();
 		expect(p.products.findProduct("CC")).andReturn(coke);
-		p.products.removeProduct(coke, ORDER_NUM_COKE);
+		p.products.consumeProduct(coke, ORDER_NUM_COKE);
 		p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad));
 
 		Product cookie = cookie();
 		expect(p.products.findProduct("CT")).andReturn(cookie);
-		p.products.removeProduct(cookie, ORDER_NUM_COOKIE);
+		p.products.consumeProduct(cookie, ORDER_NUM_COOKIE);
 		p.purchases.createPurchase(user, cookie, ORDER_NUM_COOKIE, orderCookieBase(), orderCookieTax(isGrad));
 	}
 

@@ -2,10 +2,12 @@ package memphis.fridge.server.services;
 
 import com.google.common.annotations.VisibleForTesting;
 import javax.inject.Inject;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import memphis.fridge.dao.NonceDAO;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Nonce;
-import memphis.fridge.server.io.Response;
+import memphis.fridge.server.io.HMACResponse;
 import memphis.fridge.server.io.ResponseSerializer;
 
 /**
@@ -22,23 +24,30 @@ public class GenerateNonce {
 	@Inject
 	UserDAO users;
 
-	public Response generateNonce(String clientNonce, int timestamp, String username, String requestHMAC) {
+	public HMACResponse generateNonce(String clientNonce, int timestamp, String username, String requestHMAC) {
 		users.validateHMAC(username, requestHMAC, clientNonce, timestamp, username);
 
 		Nonce nonce = nonces.generateNonce(clientNonce, timestamp);
 
-		return new NonceResponse(username, nonce.getServerNonce(), nonce.getClientNonce());
+		return new NonceResponse(users, username, nonce.getServerNonce(), nonce.getClientNonce());
 	}
 
-	private class NonceResponse extends Response {
-		String snonce;
+	@XmlRootElement(name = "methodResponse")
+	private static class NonceResponse extends HMACResponse {
 
-		NonceResponse(String username, String snonce, String cnonce) {
-			super(users, username, snonce, cnonce);
+		@XmlElement(name = "nonce")
+		public String snonce;
+
+		public NonceResponse() {
+		}
+
+		NonceResponse(UserDAO dao, String username, String snonce, String cnonce) {
+			super(dao, username, snonce, cnonce);
 			this.snonce = snonce;
 		}
 
-		public void visitParams(ResponseSerializer visitor) {
+		@Override
+		protected void visitParams(ResponseSerializer.ObjectSerializer visitor) {
 			visitor.visitString("snonce", snonce);
 		}
 	}

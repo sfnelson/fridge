@@ -2,6 +2,7 @@ package memphis.fridge.utils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 import memphis.fridge.domain.Product;
 import memphis.fridge.exceptions.InvalidAmountException;
@@ -24,7 +25,7 @@ public class CurrencyUtils {
 
 	public static BigDecimal markup(BigDecimal amount, BigDecimal markup) {
 		BigDecimal scale = markup.divide(BigDecimal.valueOf(100));
-		return amount.multiply(scale).setScale(2);
+		return amount.multiply(scale).setScale(2, RoundingMode.HALF_UP);
 	}
 
 	public static BigDecimal calculateCost(Product product, int number) {

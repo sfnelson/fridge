@@ -1,6 +1,6 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
-    <g:HTMLPanel>
+    <g:RenderablePanel>
         <dl>
             <dt>
                 <g:Label>Username:</g:Label>
@@ -12,11 +12,11 @@
                 <g:Label>Password:</g:Label>
             </dt>
             <dd>
-                <g:TextBox ui:field="password"></g:TextBox>
+                <g:PasswordTextBox ui:field="password"></g:PasswordTextBox>
             </dd>
             <dd>
                 <g:Button ui:field="login">Login</g:Button>
             </dd>
         </dl>
-    </g:HTMLPanel>
+    </g:RenderablePanel>
 </ui:UiBinder>

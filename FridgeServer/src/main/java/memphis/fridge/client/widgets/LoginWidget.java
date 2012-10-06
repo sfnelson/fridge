@@ -2,11 +2,14 @@ package memphis.fridge.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.RenderablePanel;
 import com.google.gwt.user.client.ui.TextBox;
 
 import memphis.fridge.client.views.LoginView;
@@ -16,7 +19,7 @@ import memphis.fridge.client.views.LoginView;
  * Date: 30/09/12
  */
 public class LoginWidget extends Composite implements LoginView {
-	interface Binder extends UiBinder<HTMLPanel, LoginWidget> {
+	interface Binder extends UiBinder<RenderablePanel, LoginWidget> {
 	}
 
 	@UiField
@@ -24,6 +27,9 @@ public class LoginWidget extends Composite implements LoginView {
 
 	@UiField
 	TextBox password;
+
+	@UiField
+	Button login;
 
 	LoginView.Presenter presenter;
 
@@ -46,5 +52,18 @@ public class LoginWidget extends Composite implements LoginView {
 	@UiHandler("login")
 	void login(ClickEvent ev) {
 		presenter.doLogin();
+	}
+
+	@UiHandler({"username", "password", "login"})
+	void submit(KeyPressEvent ev) {
+		if (ev.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+			if (username.getValue().length() <= 0) username.setFocus(true);
+			else if (password.getValue().length() <= 0) password.setFocus(true);
+			else {
+				login.setFocus(true);
+				login.click();
+				login.setFocus(false);
+			}
+		}
 	}
 }

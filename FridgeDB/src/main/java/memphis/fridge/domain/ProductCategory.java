@@ -23,4 +23,20 @@ public class ProductCategory {
 	@NotNull
 	@Column(name = "title", nullable = false, length = 25)
 	private String title;
+
+	public ProductCategory() {
+	}
+
+	public ProductCategory(String title, int displaySequence) {
+		this.title = title;
+		this.displaySequence = displaySequence;
+	}
+
+	public int getDisplaySequence() {
+		return displaySequence;
+	}
+
+	public String getTitle() {
+		return title;
+	}
 }

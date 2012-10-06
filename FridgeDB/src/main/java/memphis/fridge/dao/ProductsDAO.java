@@ -1,8 +1,12 @@
 package memphis.fridge.dao;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import memphis.fridge.domain.Product;
+import memphis.fridge.exceptions.InsufficientStockException;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -17,8 +21,16 @@ public class ProductsDAO {
 		return em.find(Product.class, name);
 	}
 
-	public void removeProduct(Product product, int amount) {
-		throw new UnsupportedOperationException();
+	public void consumeProduct(Product product, int amount) {
+		product = findProduct(product.getProductCode());
+		int stock = product.getInStock();
+		if (stock < amount) throw new InsufficientStockException();
+		product.setInStock(stock - amount);
+		em.merge(product);
 	}
 
+	public List<Product> getEnabledProducts() {
+		TypedQuery<Product> q = em.createNamedQuery("Products.findEnabled", Product.class);
+		return q.getResultList();
+	}
 }

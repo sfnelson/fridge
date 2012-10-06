@@ -9,7 +9,7 @@ import memphis.fridge.exceptions.FridgeException;
 import memphis.fridge.exceptions.InsufficientFundsException;
 import memphis.fridge.exceptions.InvalidAmountException;
 import memphis.fridge.exceptions.InvalidUserException;
-import memphis.fridge.server.io.Response;
+import memphis.fridge.server.io.HMACResponse;
 import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.server.ioc.MockInjectingRunner;
 import org.junit.Before;
@@ -48,7 +48,7 @@ public class TransferTest {
 
 	@Inject
 	@MockInjectingRunner.Mock
-	ResponseSerializer resp;
+	ResponseSerializer.ObjectSerializer resp;
 
 	@Inject
 	MockInjectingRunner.MockManager mocks;
@@ -133,9 +133,9 @@ public class TransferTest {
 	private void test(int amount) {
 		mocks.replay();
 		try {
-			Response response = transfer.transfer(snonce, fromUser, toUser, amount, hmac);
+			HMACResponse response = transfer.transfer(snonce, fromUser, toUser, amount, hmac);
 			assertNotNull(response);
-			response.visitResponse(resp);
+			response.visit(resp);
 		} catch (FridgeException ex) {
 			mocks.verify();
 			throw ex;

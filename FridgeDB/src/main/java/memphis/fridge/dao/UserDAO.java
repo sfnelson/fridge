@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.persist.Transactional;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.FridgeException;
@@ -20,13 +21,13 @@ public class UserDAO {
 	private final Logger log = Logger.getLogger(UserDAO.class.getName());
 
 	@Inject
-	EntityManager em;
+	Provider<EntityManager> em;
 
 	@Transactional
 	public void createGraduateUser(String username, String fullName, String email, String password) {
 		User user = new User(username, fullName, email, password);
 		user.setGrad(true);
-		em.persist(user);
+		em.get().persist(user);
 	}
 
 	@Transactional
@@ -35,7 +36,7 @@ public class UserDAO {
 	}
 
 	public User retrieveUser(String username) {
-		return em.find(User.class, username);
+		return em.get().find(User.class, username);
 	}
 
 	public void checkValidUser(String username) {
@@ -72,7 +73,7 @@ public class UserDAO {
 
 	@VisibleForTesting
 	String getPassword(String username) {
-		User user = em.find(User.class, username);
+		User user = em.get().find(User.class, username);
 
 		if (user == null) return null;
 		return user.getPassword();

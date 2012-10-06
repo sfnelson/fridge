@@ -33,6 +33,14 @@ public class NonceDAOTest {
 		Nonce nonce = dao.get().generateNonce(cnonce, time);
 	}
 
+	@Test
+	@GuiceJPATestRunner.Rollback
+	public void testGenerateNonceStephen() throws Exception {
+		String cnonce = generateNonceToken();
+		int time = (int) (System.currentTimeMillis() / 1000);
+		Nonce nonce = dao.get().generateNonce(cnonce, time);
+	}
+
 	@Test(expected = FridgeException.class)
 	@GuiceJPATestRunner.Rollback
 	public void testFailOnOldNonce() throws Exception {

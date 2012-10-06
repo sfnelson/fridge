@@ -41,7 +41,7 @@ public class GenerateNonceTest {
 
 	@Inject
 	@Mock
-	ResponseSerializer resp;
+	ResponseSerializer.ObjectSerializer resp;
 
 	@Before
 	public void setUp() throws Exception {
@@ -68,7 +68,7 @@ public class GenerateNonceTest {
 
 		// test
 		mocks.replay();
-		service.generateNonce(cnonce, timestamp, username, hmac).visitResponse(resp);
+		service.generateNonce(cnonce, timestamp, username, hmac).visit(resp);
 
 		// verify
 		mocks.verify();

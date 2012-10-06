@@ -65,6 +65,18 @@ public class UserDAOTest {
 		assertEquals(e.getPassword(), password);
 	}
 
+	@Test
+	@GuiceJPATestRunner.Rollback
+	public void testVerifying() throws Exception {
+		String cnonce = "voXalsPUZ3FpZl9XhV5q";
+		int time = 1349523138;
+		String user = "stephen";
+		String hmac = "0296f2cd2af974f701b8577a651b6314";
+
+		assertEquals(hmac, users.get().createHMAC(user, cnonce, time, user));
+		users.get().validateHMAC(user, hmac, cnonce, time, user);
+	}
+
 	private User createFooUser() throws Exception {
 		User foo = new User("foo", md5("password"), "Foo Bar", "foo@email.com");
 		foo.setGrad(true);

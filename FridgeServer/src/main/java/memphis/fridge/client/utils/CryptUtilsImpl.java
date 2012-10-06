@@ -32,7 +32,7 @@ public class CryptUtilsImpl implements CryptUtils {
 	}
 
 	private native String _sign(String password, String message) /*-{
-		return $wnd.CryptoJS.HmacMD5(message, password);
+		return $wnd.CryptoJS.HmacMD5(message, password) + "";
 	}-*/;
 
 	public String md5(String message) {
@@ -40,6 +40,6 @@ public class CryptUtilsImpl implements CryptUtils {
 	}
 
 	private native String _md5(String message) /*-{
-		return $wnd.CryptoJS.MD5(message);
+		return $wnd.CryptoJS.MD5(message) + "";
 	}-*/;
 }

@@ -3,6 +3,7 @@ package memphis.fridge.utils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import memphis.fridge.domain.Product;
 import memphis.fridge.exceptions.InvalidAmountException;
 
 /**
@@ -14,11 +15,28 @@ public class CurrencyUtils {
 	private static final BigDecimal scale = new BigDecimal(BigInteger.valueOf(100), 0);
 
 	public static BigDecimal fromCents(int cents) {
-		return new BigDecimal(BigInteger.valueOf(cents), 2);
+		return BigDecimal.valueOf(cents, 2);
 	}
 
 	public static BigDecimal fromPercent(int percent) {
-		return new BigDecimal(BigInteger.valueOf(percent * 10), 1);
+		return BigDecimal.valueOf(percent * 10, 1);
+	}
+
+	public static BigDecimal markup(BigDecimal amount, BigDecimal markup) {
+		BigDecimal scale = markup.divide(BigDecimal.valueOf(100));
+		return amount.multiply(scale).setScale(2);
+	}
+
+	public static BigDecimal calculateCost(Product product, int number) {
+		return product.getCost().multiply(BigDecimal.valueOf(number));
+	}
+
+	public static BigDecimal calculateMarkup(Product product, int number, BigDecimal tax) {
+		BigDecimal markup = product.getMarkup();
+		if (tax != null) {
+			markup = markup.add(tax);
+		}
+		return markup(calculateCost(product, number), markup);
 	}
 
 	public static int toCents(BigDecimal amount) {

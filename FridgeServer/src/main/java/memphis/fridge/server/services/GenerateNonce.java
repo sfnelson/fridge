@@ -27,23 +27,19 @@ public class GenerateNonce {
 
 		Nonce nonce = nonces.generateNonce(clientNonce, timestamp);
 
-		String hmac = users.createHMAC(username, nonce.getServerNonce(), nonce.getClientNonce());
-
-		return new NonceResponse(nonce.getServerNonce(), hmac);
+		return new NonceResponse(username, nonce.getServerNonce(), nonce.getClientNonce());
 	}
 
-	private static class NonceResponse implements Response {
+	private class NonceResponse extends Response {
 		String snonce;
-		String hmac;
 
-		NonceResponse(String snonce, String hmac) {
+		NonceResponse(String username, String snonce, String cnonce) {
+			super(users, username, snonce, cnonce);
 			this.snonce = snonce;
-			this.hmac = hmac;
 		}
 
-		public void visitResponse(ResponseSerializer visitor) {
+		public void visitParams(ResponseSerializer visitor) {
 			visitor.visitString("snonce", snonce);
-			visitor.visitString("hmac", hmac);
 		}
 	}
 }

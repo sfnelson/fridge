@@ -2,19 +2,19 @@ package memphis.fridge.server.services;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Maps;
 import com.google.inject.persist.Transactional;
 import javax.inject.Inject;
-import memphis.fridge.dao.ProductsDAO;
-import memphis.fridge.dao.PurchaseDAO;
-import memphis.fridge.dao.UserDAO;
+import memphis.fridge.dao.*;
 import memphis.fridge.domain.Product;
+import memphis.fridge.domain.User;
+import memphis.fridge.exceptions.InsufficientStockException;
 import memphis.fridge.exceptions.InvalidProductException;
 import memphis.fridge.server.io.Response;
+import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.utils.Pair;
+
+import static memphis.fridge.utils.CurrencyUtils.*;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -31,39 +31,84 @@ public class Purchase {
 	@Inject
 	PurchaseDAO purchases;
 
+	@Inject
+	FridgeDAO fridge;
+
+	@Inject
+	CreditLogDAO creditLog;
+
 	@Transactional
-	public Response purchase(String snonce, String user, List<Pair<String, Integer>> items, String hmac) {
-		users.validateHMAC(user, hmac, snonce, user, items);
+	public Response purchase(String snonce, String username, List<Pair<String, Integer>> items, String hmac) {
+		users.validateHMAC(username, hmac, snonce, username, items);
 
-		Map<String, Product> cache = Maps.newHashMap();
+		User user = users.retrieveUser(username);
 
+		/**
+		 * This is counter-intuitive, but the graduate discount is actually a markup on undergrads.
+		 */
+		BigDecimal tax = user.isGrad() ? BigDecimal.ZERO : fridge.getGraduateDiscount();
 		BigDecimal totalCost = BigDecimal.ZERO;
+
+		/**
+		 * For each item in the purchase list:
+		 *  * check that the product exists
+		 *  * check that sufficient stock is available
+		 *  * remove stock
+		 *  * create a purchase record
+		 *  * add cost to cumulative total
+		 */
 		for (Pair<String, Integer> item : items) {
-			Product p = products.findProduct(item.getKey());
-			if (p == null) throw new InvalidProductException();
-			cache.put(item.getKey(), p);
-			totalCost = totalCost.add(
-					cost(p.getCost(), p.getMarkup(), BigDecimal.valueOf(item.getValue()))
-			);
+			Product product = products.findProduct(item.getKey());
+			int count = item.getValue();
+			if (product == null) throw new InvalidProductException();
+			if (product.getInStock() < count) throw new InsufficientStockException();
+			products.removeProduct(product, count);
+
+			BigDecimal cost = calculateCost(product, count);
+			BigDecimal surplus = calculateMarkup(product, count, tax);
+
+			purchases.createPurchase(user, product, count, cost, surplus);
+
+			totalCost = add(totalCost, cost, surplus);
 		}
 
-		users.checkSufficientBalance(user, totalCost);
+		/**
+		 * Remove the funds from the user's account if possible. Throws an exception if
+		 * the user does not have the request funds or cannot go sufficiently negative.
+		 */
+		users.removeFunds(user, totalCost);
 
-		for (Pair<String, Integer> item : items) {
-			Product p = products.findProduct(item.getKey());
-			if (p == null) throw new InvalidProductException();
-			cache.put(item.getKey(), p);
-			totalCost = totalCost.add(
-					cost(p.getCost(), p.getMarkup(), BigDecimal.valueOf(item.getValue()))
-			);
-		}
+		/* Create a transaction record for this purchase */
+		creditLog.createPurchase(user, totalCost);
 
-		return null;
+		return new PurchaseResponse(username,
+				snonce,
+				toCents(users.retrieveUser(username).getBalance()),
+				toCents(totalCost));
 	}
 
-	@VisibleForTesting
-	BigDecimal cost(BigDecimal cost, BigDecimal markup, BigDecimal num) {
-		return cost.add(cost.multiply(markup.divide(BigDecimal.valueOf(100))))
-				.multiply(num).setScale(2);
+	private static BigDecimal add(BigDecimal... toAdd) {
+		BigDecimal sum = BigDecimal.ZERO;
+		for (BigDecimal v : toAdd) {
+			sum = sum.add(v);
+		}
+		return sum;
+	}
+
+	private class PurchaseResponse extends Response {
+		int balance;
+		int order_total;
+
+		PurchaseResponse(String username, String snonce, int balance, int order_total) {
+			super(users, username, snonce, balance, order_total);
+			this.balance = balance;
+			this.order_total = order_total;
+		}
+
+		@Override
+		protected void visitParams(ResponseSerializer visitor) {
+			visitor.visitInteger("balance", balance);
+			visitor.visitInteger("order_total", order_total);
+		}
 	}
 }

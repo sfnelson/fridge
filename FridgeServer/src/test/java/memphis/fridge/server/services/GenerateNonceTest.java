@@ -2,34 +2,50 @@ package memphis.fridge.server.services;
 
 import java.util.Date;
 
+import javax.inject.Inject;
 import memphis.fridge.dao.NonceDAO;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Nonce;
 import memphis.fridge.server.io.ResponseSerializer;
-import org.easymock.EasyMock;
+import memphis.fridge.server.ioc.MockInjectingRunner;
+import memphis.fridge.server.ioc.MockInjectingRunner.Mock;
+import memphis.fridge.server.ioc.MockInjectingRunner.MockManager;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.reset;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 30/09/12
  */
+@RunWith(MockInjectingRunner.class)
+@MockInjectingRunner.ToInject({GenerateNonce.class})
 public class GenerateNonceTest {
 
+	@Inject
 	GenerateNonce service;
+
+	@Inject
+	MockManager mocks;
+
+	@Inject
+	@Mock
 	UserDAO users;
+
+	@Inject
+	@Mock
 	NonceDAO nonces;
+
+	@Inject
+	@Mock
+	ResponseSerializer resp;
 
 	@Before
 	public void setUp() throws Exception {
-		users = EasyMock.createMock(UserDAO.class);
-		nonces = EasyMock.createMock(NonceDAO.class);
-
-		service = new GenerateNonce();
-		service.users = users;
-		service.nonces = nonces;
+		mocks.reset();
 	}
 
 	@Test
@@ -41,8 +57,6 @@ public class GenerateNonceTest {
 		String hmac = "HMAC'ED";
 		Nonce newNonce = new Nonce(snonce, cnonce, new Date());
 
-		ResponseSerializer resp = EasyMock.createMock(ResponseSerializer.class);
-
 		// setup
 		reset(users, nonces, resp);
 		users.validateHMAC(username, hmac, cnonce, timestamp, username);
@@ -53,11 +67,11 @@ public class GenerateNonceTest {
 		resp.visitString("hmac", hmac);
 
 		// test
-		replay(users, nonces, resp);
+		mocks.replay();
 		service.generateNonce(cnonce, timestamp, username, hmac).visitResponse(resp);
 
 		// verify
-		verify(users, nonces, resp);
+		mocks.verify();
 
 	}
 }

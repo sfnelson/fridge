@@ -7,6 +7,11 @@ import javax.validation.constraints.NotNull;
  * Date: 30/09/12
  */
 public class Pair<K, V> {
+
+	public static <K, V> Pair<K, V> create(K key, V value) {
+		return new Pair<K, V>(key, value);
+	}
+
 	@NotNull
 	K key;
 	@NotNull

@@ -2,15 +2,14 @@ package memphis.fridge.dao;
 
 import java.math.BigDecimal;
 
-import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
- * Date: 30/09/12
+ * Date: 6/10/12
  */
-public class PurchaseDAO {
-	public void createPurchase(User user, Product product, int count, BigDecimal cost, BigDecimal surplus) {
+public class CreditLogDAO {
+	public void createPurchase(User user, BigDecimal costGrad) {
 		throw new UnsupportedOperationException();
 	}
 }

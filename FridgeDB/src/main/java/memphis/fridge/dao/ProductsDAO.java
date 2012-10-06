@@ -17,4 +17,8 @@ public class ProductsDAO {
 		return em.find(Product.class, name);
 	}
 
+	public void removeProduct(Product product, int amount) {
+		throw new UnsupportedOperationException();
+	}
+
 }

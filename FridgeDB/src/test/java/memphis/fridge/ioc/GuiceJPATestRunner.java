@@ -31,8 +31,8 @@ public class GuiceJPATestRunner extends GuiceTestRunner {
 
 	PersistService ps;
 
-	public GuiceJPATestRunner(Class<?> klass) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, InitializationError {
-		super(klass);
+	public GuiceJPATestRunner(Class<?> cls) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, InitializationError {
+		super(cls);
 	}
 
 	@Override

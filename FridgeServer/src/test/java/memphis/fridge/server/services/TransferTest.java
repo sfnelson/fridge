@@ -2,55 +2,60 @@ package memphis.fridge.server.services;
 
 import java.math.BigDecimal;
 
+import com.google.inject.Inject;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.FridgeException;
 import memphis.fridge.exceptions.InsufficientFundsException;
 import memphis.fridge.exceptions.InvalidAmountException;
 import memphis.fridge.exceptions.InvalidUserException;
+import memphis.fridge.server.io.Response;
 import memphis.fridge.server.io.ResponseSerializer;
-import org.easymock.EasyMock;
-import org.junit.After;
+import memphis.fridge.server.ioc.MockInjectingRunner;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
+import static junit.framework.Assert.assertNotNull;
+import static memphis.fridge.utils.CurrencyUtils.toCents;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 30/09/12
  */
+@RunWith(MockInjectingRunner.class)
+@MockInjectingRunner.ToInject({Transfer.class})
 public class TransferTest {
 
-	String snonce;
-	String fromUser;
-	String toUser;
-	int amount;
-	String hmac;
+	private final String snonce = "SNONCE";
+	private final String fromUser = "FROMUSER";
+	private final String toUser = "TOUSER";
+	private final int amount = 0;
+	private final String hmac = "HMAC";
 
+	@Inject
 	Transfer transfer;
 
+	@Inject
+	@MockInjectingRunner.Mock
 	UserDAO users;
+
+	@Inject
+	@MockInjectingRunner.Mock
+	User user;
+
+	@Inject
+	@MockInjectingRunner.Mock
+	ResponseSerializer resp;
+
+	@Inject
+	MockInjectingRunner.MockManager mocks;
 
 	@Before
 	public void setUp() {
-		snonce = "SNONCE";
-		fromUser = "FROMUSER";
-		toUser = "TOUSER";
-		amount = 0;
-		hmac = "HMAC";
-
-		transfer = new Transfer();
-		users = EasyMock.createMock(UserDAO.class);
-
-		transfer.users = users;
-
-		reset(users);
-	}
-
-	@After
-	public void tearDown() {
-		verify(users);
+		mocks.reset();
 	}
 
 	@Test(expected = FridgeException.class)
@@ -58,9 +63,7 @@ public class TransferTest {
 		users.validateHMAC(fromUser, hmac, snonce, fromUser, toUser, amount);
 		expectLastCall().andThrow(new FridgeException(1, "invalid hmac"));
 
-		replay(users);
-
-		transfer.transfer(snonce, fromUser, toUser, amount, hmac);
+		test(amount);
 	}
 
 	@Test(expected = InvalidUserException.class)
@@ -69,9 +72,7 @@ public class TransferTest {
 		users.checkValidUser(toUser);
 		expectLastCall().andThrow(new InvalidUserException(toUser));
 
-		replay(users);
-
-		transfer.transfer(snonce, fromUser, toUser, amount, hmac);
+		test(amount);
 	}
 
 	@Test(expected = InvalidAmountException.class)
@@ -79,15 +80,11 @@ public class TransferTest {
 		users.validateHMAC(fromUser, hmac, snonce, fromUser, toUser, -1);
 		users.checkValidUser(toUser);
 
-		replay(users);
-
-		transfer.transfer(snonce, fromUser, toUser, -1, hmac);
+		test(-1);
 	}
 
 	@Test
 	public void testTransferZero() throws Exception {
-		User user = createMock(User.class);
-		ResponseSerializer resp = createMock(ResponseSerializer.class);
 		BigDecimal balance = new BigDecimal("10.00");
 
 		users.validateHMAC(fromUser, hmac, snonce, fromUser, toUser, 0);
@@ -99,11 +96,7 @@ public class TransferTest {
 		resp.visitInteger("balance", 1000);
 		resp.visitString("hmac", hmac);
 
-		replay(users, user, resp);
-
-		transfer.transfer(snonce, fromUser, toUser, 0, hmac).visitResponse(resp);
-
-		verify(user, resp);
+		test(0);
 	}
 
 	@Test(expected = InsufficientFundsException.class)
@@ -115,15 +108,11 @@ public class TransferTest {
 		users.checkSufficientBalance(fromUser, amount);
 		expectLastCall().andThrow(new InsufficientFundsException(fromUser, BigDecimal.ZERO));
 
-		replay(users);
-
-		transfer.transfer(snonce, fromUser, toUser, 1000, hmac);
+		test(1000);
 	}
 
 	@Test
 	public void testTransfer() throws Exception {
-		User user = createMock(User.class);
-		ResponseSerializer resp = createMock(ResponseSerializer.class);
 		BigDecimal amount = new BigDecimal("10.00");
 		BigDecimal balance = new BigDecimal("5.00");
 
@@ -135,13 +124,22 @@ public class TransferTest {
 		expect(user.getBalance()).andReturn(balance);
 		expect(users.createHMAC(fromUser, snonce, 500)).andReturn(hmac);
 
-		resp.visitInteger("balance", 500);
+		resp.visitInteger("balance", toCents(balance));
 		resp.visitString("hmac", hmac);
 
-		replay(users, user, resp);
+		test(1000);
+	}
 
-		transfer.transfer(snonce, fromUser, toUser, 1000, hmac).visitResponse(resp);
-
-		verify(user, resp);
+	private void test(int amount) {
+		mocks.replay();
+		try {
+			Response response = transfer.transfer(snonce, fromUser, toUser, amount, hmac);
+			assertNotNull(response);
+			response.visitResponse(resp);
+		} catch (FridgeException ex) {
+			mocks.verify();
+			throw ex;
+		}
+		mocks.verify();
 	}
 }

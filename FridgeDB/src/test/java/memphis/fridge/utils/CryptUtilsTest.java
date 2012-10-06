@@ -32,6 +32,7 @@ public class CryptUtilsTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testSignPairs() throws Exception {
 		String nonce = "rEQ7rxpXTrm4X2LDFv9f";
 		String user = "stephen";

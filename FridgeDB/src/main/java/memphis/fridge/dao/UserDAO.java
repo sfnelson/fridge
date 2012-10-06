@@ -78,4 +78,7 @@ public class UserDAO {
 		return user.getPassword();
 	}
 
+	public void removeFunds(User user, BigDecimal costGrad) {
+		throw new UnsupportedOperationException();
+	}
 }

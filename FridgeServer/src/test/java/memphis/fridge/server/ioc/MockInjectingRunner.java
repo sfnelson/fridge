@@ -86,6 +86,7 @@ public class MockInjectingRunner extends BlockJUnit4ClassRunner {
 			}
 		}
 
+		@SuppressWarnings("unchecked")
 		private Class<?> getInjectionType(Field f) {
 			if (f.getType().equals(javax.inject.Provider.class)) {
 				ParameterizedType t = (ParameterizedType) f.getGenericType();

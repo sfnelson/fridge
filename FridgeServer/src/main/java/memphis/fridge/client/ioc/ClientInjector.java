@@ -7,7 +7,7 @@ import com.google.gwt.inject.client.Ginjector;
 import com.google.gwt.place.shared.PlaceHistoryHandler;
 
 import javax.inject.Named;
-import memphis.fridge.client.activities.ShowProductListActivity;
+import memphis.fridge.client.views.FridgeView;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -19,11 +19,11 @@ public interface ClientInjector extends Ginjector {
 
 	PlaceHistoryHandler getHistoryHandler();
 
+	FridgeView getFridgeView();
+
 	@Named("user-panel")
-	ActivityManager getUserPanelManager();
+	ActivityManager getUserPanel();
 
 	@Named("product-panel")
-	ActivityManager getProductPanelManager();
-
-	ShowProductListActivity getProductsList();
+	ActivityManager getProductPanel();
 }

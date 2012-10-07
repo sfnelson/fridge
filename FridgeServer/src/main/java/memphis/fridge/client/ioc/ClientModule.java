@@ -19,10 +19,14 @@ import memphis.fridge.client.places.LoginPlace;
 import memphis.fridge.client.rpc.Session;
 import memphis.fridge.client.utils.CryptUtils;
 import memphis.fridge.client.utils.CryptUtilsImpl;
+import memphis.fridge.client.views.FridgeView;
 import memphis.fridge.client.views.LoginView;
 import memphis.fridge.client.views.ProductView;
+import memphis.fridge.client.views.PurchaseView;
+import memphis.fridge.client.widgets.FridgeWidget;
 import memphis.fridge.client.widgets.LoginWidget;
 import memphis.fridge.client.widgets.ProductTableWidget;
+import memphis.fridge.client.widgets.PurchaseWidget;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -33,13 +37,15 @@ public class ClientModule extends AbstractGinModule {
 	protected void configure() {
 		bind(EventBus.class).to(SimpleEventBus.class).asEagerSingleton();
 		bind(LoginView.class).to(LoginWidget.class).asEagerSingleton();
-		bind(ProductView.class).to(ProductTableWidget.class);
+		bind(ProductView.class).to(ProductTableWidget.class).asEagerSingleton();
+		bind(PurchaseView.class).to(PurchaseWidget.class).asEagerSingleton();
 		bind(CryptUtils.class).to(CryptUtilsImpl.class);
+		bind(FridgeView.class).to(FridgeWidget.class);
 		bind(Session.class).asEagerSingleton();
 	}
 
 	@Provides
-	@SuppressWarnings("deprecated")
+	@SuppressWarnings({"deprecation"})
 	PlaceHistoryHandler historyHandler(PlaceController pc, EventBus eb) {
 		FridgePlaceMapper pm = GWT.create(FridgePlaceMapper.class);
 		PlaceHistoryHandler hh = new PlaceHistoryHandler(pm);
@@ -49,7 +55,7 @@ public class ClientModule extends AbstractGinModule {
 
 	@Provides
 	@Singleton
-	@SuppressWarnings("deprecated")
+	@SuppressWarnings({"deprecation"})
 	PlaceController placeController(EventBus eb) {
 		return new PlaceController(eb);
 	}

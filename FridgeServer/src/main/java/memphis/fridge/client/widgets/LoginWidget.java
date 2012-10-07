@@ -1,14 +1,14 @@
 package memphis.fridge.client.widgets;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RenderablePanel;
 import com.google.gwt.user.client.ui.TextBox;
 
@@ -29,7 +29,7 @@ public class LoginWidget extends Composite implements LoginView {
 	TextBox password;
 
 	@UiField
-	Button login;
+	Label message;
 
 	LoginView.Presenter presenter;
 
@@ -39,6 +39,11 @@ public class LoginWidget extends Composite implements LoginView {
 
 	public void setPresenter(Presenter p) {
 		this.presenter = p;
+		Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+			public void execute() {
+				username.setFocus(true);
+			}
+		});
 	}
 
 	public String getUser() {
@@ -49,20 +54,13 @@ public class LoginWidget extends Composite implements LoginView {
 		return password.getValue();
 	}
 
-	@UiHandler("login")
-	void login(ClickEvent ev) {
-		presenter.doLogin();
-	}
-
-	@UiHandler({"username", "password", "login"})
+	@UiHandler({"username", "password"})
 	void submit(KeyPressEvent ev) {
 		if (ev.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
 			if (username.getValue().length() <= 0) username.setFocus(true);
 			else if (password.getValue().length() <= 0) password.setFocus(true);
 			else {
-				login.setFocus(true);
-				login.click();
-				login.setFocus(false);
+				presenter.doLogin();
 			}
 		}
 	}

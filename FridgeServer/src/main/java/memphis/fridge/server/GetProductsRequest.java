@@ -31,7 +31,7 @@ public class GetProductsRequest {
 	@GET
 	@Path("json")
 	@Produces(MediaType.APPLICATION_JSON)
-	public JSONArray requestNonceJSON() {
+	public JSONArray getProductsJSON() {
 		JSONListSerializer s = serializer.get();
 		service.getProducts(username).visit(s);
 		return s.get();

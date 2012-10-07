@@ -1,22 +1,29 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <ui:style>
+        .login {
+            margin: 0 auto;
+            width: 16em;
+            text-align: center;
+        }
+    </ui:style>
     <g:RenderablePanel>
-        <dl>
-            <dt>
-                <g:Label>Username:</g:Label>
-            </dt>
-            <dd>
-                <g:TextBox ui:field="username"></g:TextBox>
-            </dd>
-            <dt>
-                <g:Label>Password:</g:Label>
-            </dt>
-            <dd>
-                <g:PasswordTextBox ui:field="password"></g:PasswordTextBox>
-            </dd>
-            <dd>
-                <g:Button ui:field="login">Login</g:Button>
-            </dd>
-        </dl>
+        <table class="{style.login}">
+            <tr>
+                <td>
+                    <g:Label>Username:</g:Label>
+                    <g:TextBox ui:field="username"></g:TextBox>
+                </td>
+                <td>
+                    <g:Label>Password:</g:Label>
+                    <g:PasswordTextBox ui:field="password"></g:PasswordTextBox>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <g:Label ui:field="message">Enter your username and password then press 'enter'</g:Label>
+                </td>
+            </tr>
+        </table>
     </g:RenderablePanel>
 </ui:UiBinder>

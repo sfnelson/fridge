@@ -2,11 +2,10 @@ package memphis.fridge.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootPanel;
 
 import memphis.fridge.client.ioc.ClientInjector;
+import memphis.fridge.client.views.FridgeView;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -17,24 +16,10 @@ public class FridgeClient implements EntryPoint {
 	private final ClientInjector injector = GWT.create(ClientInjector.class);
 
 	public void onModuleLoad() {
-		injector.getUserPanelManager().setDisplay(new Root());
-		injector.getProductPanelManager().setDisplay(new Root());
-
+		FridgeView fridge = injector.getFridgeView();
+		injector.getUserPanel().setDisplay(fridge.getUserPanel());
+		injector.getProductPanel().setDisplay(fridge.getProductsPanel());
+		RootPanel.get().add(fridge);
 		injector.getHistoryHandler().handleCurrentHistory();
-	}
-
-	private static class Root implements AcceptsOneWidget {
-		private IsWidget w;
-
-		public void setWidget(IsWidget w) {
-			clear();
-			RootPanel.get().add(w);
-			this.w = w;
-		}
-
-		public void clear() {
-			if (this.w != null) RootPanel.get().remove(this.w);
-			this.w = null;
-		}
 	}
 }

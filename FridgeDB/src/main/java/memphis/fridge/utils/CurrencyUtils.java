@@ -24,7 +24,7 @@ public class CurrencyUtils {
 	}
 
 	public static BigDecimal markup(BigDecimal amount, BigDecimal markup) {
-		BigDecimal scale = markup.divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+		BigDecimal scale = markup.movePointLeft(2);
 		return amount.multiply(scale).setScale(2, RoundingMode.HALF_UP);
 	}
 
@@ -48,11 +48,11 @@ public class CurrencyUtils {
 		}
 	}
 
-    public static int toPercent(BigDecimal amount) {
-        try {
-            return amount.intValueExact();
-        } catch (ArithmeticException ex) {
-            throw new InvalidAmountException(ex);
-        }
-    }
+	public static int toPercent(BigDecimal amount) {
+		try {
+			return amount.intValueExact();
+		} catch (ArithmeticException ex) {
+			throw new InvalidAmountException(ex);
+		}
+	}
 }

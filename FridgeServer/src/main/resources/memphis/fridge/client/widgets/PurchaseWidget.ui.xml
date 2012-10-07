@@ -1,0 +1,25 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+        >
+    <ui:style>
+        .add dt, .add dd {
+            margin: 0;
+            display: inline;
+        }
+    </ui:style>
+    <g:RenderablePanel>
+        <dl class="{style.add}">
+            <dt>Product Code:</dt>
+            <dd>
+                <g:TextBox ui:field="product"/>
+            </dd>
+            <dt>Number:</dt>
+            <dd>
+                <g:TextBox ui:field="amount"/>
+            </dd>
+            <dd>
+                <g:Button ui:field="add">Add</g:Button>
+            </dd>
+        </dl>
+    </g:RenderablePanel>
+</ui:UiBinder>

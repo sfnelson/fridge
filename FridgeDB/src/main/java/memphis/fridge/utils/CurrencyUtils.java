@@ -13,7 +13,7 @@ import memphis.fridge.exceptions.InvalidAmountException;
  */
 public class CurrencyUtils {
 
-	private static final BigDecimal scale = new BigDecimal(BigInteger.valueOf(100), 0);
+	private static final BigDecimal CENTS_SCALE = new BigDecimal(BigInteger.valueOf(100), 0);
 
 	public static BigDecimal fromCents(int cents) {
 		return BigDecimal.valueOf(cents, 2);
@@ -42,9 +42,17 @@ public class CurrencyUtils {
 
 	public static int toCents(BigDecimal amount) {
 		try {
-			return amount.multiply(scale).intValueExact();
+			return amount.multiply(CENTS_SCALE).intValueExact();
 		} catch (ArithmeticException ex) {
 			throw new InvalidAmountException(ex);
 		}
 	}
+
+    public static int toPercent(BigDecimal amount) {
+        try {
+            return amount.intValueExact();
+        } catch (ArithmeticException ex) {
+            throw new InvalidAmountException(ex);
+        }
+    }
 }

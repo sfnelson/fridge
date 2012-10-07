@@ -33,4 +33,16 @@ public class ProductsDAO {
 		TypedQuery<Product> q = em.createNamedQuery("Products.findEnabled", Product.class);
 		return q.getResultList();
 	}
+
+    public void add(Product product) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void save(Product product) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void checkProductNotExists(String code) {
+        throw new UnsupportedOperationException();
+    }
 }

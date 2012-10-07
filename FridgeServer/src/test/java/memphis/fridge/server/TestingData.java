@@ -22,15 +22,25 @@ public class TestingData {
 	public static final String SNONCE = "{SNONCE}";
 	public static final String HMAC = "{HMAC}";
 
-	public static final ProductCategory DRINKS = new ProductCategory("Drinks", 1);
-
 	public static final BigDecimal COKE_BASE = fromCents(100);
 	public static final BigDecimal COKE_TAX_RATE = fromPercent(20);
 	public static final BigDecimal COKE_TAX_UNIT = markup(COKE_BASE, COKE_TAX_RATE);
 	public static final int COKE_STOCK = 18;
 
+    public static ProductCategory drinkCategory() {
+        return new ProductCategory(0, 1, "Drinks");
+    }
+
+    public static ProductCategory snackCategory() {
+        return new ProductCategory(1, 2, "Snacks");
+    }
+
+    public static ProductCategory chocolateCategory() {
+        return new ProductCategory(2, 3, "Chocolate");
+    }
+
 	public static Product coke() {
-		Product coke = new Product("CC", "Coke Can", COKE_BASE, COKE_TAX_RATE, DRINKS);
+		Product coke = new Product("CC", "Coke Can", COKE_BASE, COKE_TAX_RATE, drinkCategory());
 		coke.setInStock(COKE_STOCK);
 		return coke;
 	}
@@ -43,15 +53,13 @@ public class TestingData {
 		return COKE_BASE.add(cokeTax(isGrad));
 	}
 
-	public static final ProductCategory FOOD = new ProductCategory("Food", 2);
-
 	public static final BigDecimal COOKIE_BASE = fromCents(200);
 	public static final BigDecimal COOKIE_TAX_RATE = fromPercent(20);
 	public static final BigDecimal COOKIE_TAX_UNIT = markup(COOKIE_BASE, COOKIE_TAX_RATE);
 	public static final int COOKIE_STOCK = 9;
 
 	public static Product cookie() {
-		Product cookie = new Product("CT", "Cookie Time", COOKIE_BASE, COOKIE_TAX_RATE, FOOD);
+		Product cookie = new Product("CT", "Cookie Time", COOKIE_BASE, COOKIE_TAX_RATE, snackCategory());
 		cookie.setInStock(COOKIE_STOCK);
 		return cookie;
 	}

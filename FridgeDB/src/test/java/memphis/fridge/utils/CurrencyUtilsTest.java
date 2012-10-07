@@ -49,6 +49,12 @@ public class CurrencyUtilsTest {
 		assertEquals(-1000, CurrencyUtils.toCents(val));
 	}
 
+    @Test
+    public void testToPercent() {
+        BigDecimal val = new BigDecimal("20.0");
+        assertEquals(20, CurrencyUtils.toPercent(val));
+    }
+
 	@Test
 	public void testMarkup() {
 		BigDecimal v0_00 = BigDecimal.valueOf(0, 2);

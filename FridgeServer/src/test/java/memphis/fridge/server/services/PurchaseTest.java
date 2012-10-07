@@ -79,7 +79,7 @@ public class PurchaseTest {
 	@Test(expected = InvalidProductException.class)
 	public void testPurchaseInvalidProduct() throws Exception {
 		expectUserInit(true);
-		expect(p.products.findProduct("CC")).andThrow(new InvalidProductException());
+		expect(p.products.findProduct("CC")).andThrow(new InvalidProductException("CC"));
 		test();
 	}
 
@@ -104,7 +104,7 @@ public class PurchaseTest {
 
 		BigDecimal num = BigDecimal.valueOf(ORDER_NUM_COKE);
 		p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad));
-		expect(p.products.findProduct("CT")).andThrow(new InvalidProductException());
+		expect(p.products.findProduct("CT")).andThrow(new InvalidProductException("CT"));
 		test();
 	}
 

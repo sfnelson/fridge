@@ -47,6 +47,10 @@ public class UserDAO {
 		throw new UnsupportedOperationException();
 	}
 
+    public void checkAdmin(String username) {
+        throw new UnsupportedOperationException();
+    }
+
 	public void validateHMAC(String username, String hmac, Object... toValidate) throws FridgeException {
 
 		String password = getPassword(username);

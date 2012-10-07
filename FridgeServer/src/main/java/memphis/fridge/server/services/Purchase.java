@@ -60,7 +60,7 @@ public class Purchase {
 		for (Pair<String, Integer> item : items) {
 			Product product = products.findProduct(item.getKey());
 			int count = item.getValue();
-			if (product == null) throw new InvalidProductException();
+			if (product == null) throw new InvalidProductException(item.getKey());
 			if (product.getInStock() < count) throw new InsufficientStockException();
 			products.consumeProduct(product, count);
 

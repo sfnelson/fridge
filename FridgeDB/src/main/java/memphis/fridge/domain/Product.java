@@ -55,15 +55,19 @@ public class Product {
 	}
 
 	public Product(String productCode, String description, BigDecimal cost, BigDecimal markup, ProductCategory category) {
-		this.productCode = productCode;
-		this.description = description;
-		this.cost = cost;
-		this.markup = markup;
-		enabled = true;
-		this.category = category;
-		inStock = 0;
-		stockLowMark = 0;
+        this(productCode, description, cost, markup, 0, 0, category);
 	}
+
+    public Product(String productCode, String description, BigDecimal cost, BigDecimal markup, int inStock, int stockLowMark, ProductCategory category) {
+        this.productCode = productCode;
+        this.description = description;
+        this.cost = cost;
+        this.markup = markup;
+        this.enabled = true;
+        this.category = category;
+        this.inStock = inStock;
+        this.stockLowMark = stockLowMark;
+    }
 
 	public String getProductCode() {
 		return productCode;
@@ -124,4 +128,36 @@ public class Product {
 	public void setStockLowMark(int stockLowMark) {
 		this.stockLowMark = stockLowMark;
 	}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Product product = (Product) o;
+
+        if (enabled != product.enabled) return false;
+        if (inStock != product.inStock) return false;
+        if (stockLowMark != product.stockLowMark) return false;
+        if (!category.equals(product.category)) return false;
+        if (!cost.equals(product.cost)) return false;
+        if (!description.equals(product.description)) return false;
+        if (!markup.equals(product.markup)) return false;
+        if (!productCode.equals(product.productCode)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = productCode.hashCode();
+        result = 31 * result + description.hashCode();
+        result = 31 * result + cost.hashCode();
+        result = 31 * result + markup.hashCode();
+        result = 31 * result + (enabled ? 1 : 0);
+        result = 31 * result + category.hashCode();
+        result = 31 * result + inStock;
+        result = 31 * result + stockLowMark;
+        return result;
+    }
 }

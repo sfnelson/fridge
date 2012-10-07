@@ -6,7 +6,7 @@ import java.util.Random;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 30/09/12
  */
-public class CryptUtilsImpl implements CryptUtils {
+public final class CryptUtilsImpl implements CryptUtils {
 
 	public static final String NONCE_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	public static final int NONCE_LENGTH = 20;
@@ -42,4 +42,8 @@ public class CryptUtilsImpl implements CryptUtils {
 	private native String _md5(String message) /*-{
 		return $wnd.CryptoJS.MD5(message) + "";
 	}-*/;
+
+	public boolean verify(String secret, String signature, Object... params) {
+		return signature.equals(sign(secret, params));
+	}
 }

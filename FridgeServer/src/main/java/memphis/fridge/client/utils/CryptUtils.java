@@ -12,4 +12,5 @@ public interface CryptUtils {
 
 	String md5(String message);
 
+	boolean verify(String secret, String signature, Object... params);
 }

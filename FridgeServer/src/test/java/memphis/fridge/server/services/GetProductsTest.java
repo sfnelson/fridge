@@ -95,7 +95,7 @@ public class GetProductsTest {
 		os.visitString("product_code", coke.getProductCode());
 		os.visitString("description", coke.getDescription());
 		os.visitInteger("in_stock", coke.getInStock());
-		os.visitInteger("cost", toCents(cokeTotal(isGrad)));
+		os.visitInteger("price", toCents(cokeTotal(isGrad)));
 		os.visitString("category", coke.getCategory().getTitle());
 		os.visitInteger("category_order", coke.getCategory().getDisplaySequence());
 	}
@@ -106,7 +106,7 @@ public class GetProductsTest {
 		os.visitString("product_code", cookie.getProductCode());
 		os.visitString("description", cookie.getDescription());
 		os.visitInteger("in_stock", cookie.getInStock());
-		os.visitInteger("cost", toCents(cookieTotal(isGrad)));
+		os.visitInteger("price", toCents(cookieTotal(isGrad)));
 		os.visitString("category", cookie.getCategory().getTitle());
 		os.visitInteger("category_order", cookie.getCategory().getDisplaySequence());
 	}

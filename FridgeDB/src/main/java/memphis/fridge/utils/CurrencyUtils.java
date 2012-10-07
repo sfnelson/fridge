@@ -24,7 +24,7 @@ public class CurrencyUtils {
 	}
 
 	public static BigDecimal markup(BigDecimal amount, BigDecimal markup) {
-		BigDecimal scale = markup.divide(BigDecimal.valueOf(100));
+		BigDecimal scale = markup.divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
 		return amount.multiply(scale).setScale(2, RoundingMode.HALF_UP);
 	}
 

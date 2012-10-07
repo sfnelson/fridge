@@ -1,9 +1,7 @@
 package memphis.fridge.client;
 
-import com.google.gwt.activity.shared.AbstractActivity;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -14,17 +12,15 @@ import memphis.fridge.client.ioc.ClientInjector;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 30/09/12
  */
-public class FridgeClient extends AbstractActivity implements EntryPoint {
+public class FridgeClient implements EntryPoint {
 
 	private final ClientInjector injector = GWT.create(ClientInjector.class);
 
 	public void onModuleLoad() {
-		this.start(new Root(), injector.getEventBus());
-		injector.getProductsList().start(new Root(), injector.getEventBus());
-	}
+		injector.getUserPanelManager().setDisplay(new Root());
+		injector.getProductPanelManager().setDisplay(new Root());
 
-	public void start(AcceptsOneWidget panel, EventBus eventBus) {
-		injector.getLoginActivity().start(panel, eventBus);
+		injector.getHistoryHandler().handleCurrentHistory();
 	}
 
 	private static class Root implements AcceptsOneWidget {

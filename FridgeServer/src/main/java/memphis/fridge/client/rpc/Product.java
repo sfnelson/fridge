@@ -10,7 +10,7 @@ import com.google.gwt.core.client.JsArray;
 public class Product extends JavaScriptObject {
 
 	public static native JsArray<Product> parse(String json) /*-{
-		return eval(json);
+		return eval('(' + json + ')');
 	}-*/;
 
 	protected Product() {

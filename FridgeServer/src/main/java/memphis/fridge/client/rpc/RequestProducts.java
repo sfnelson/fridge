@@ -13,7 +13,6 @@ import com.google.gwt.user.client.Window;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import memphis.fridge.client.utils.Session;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>

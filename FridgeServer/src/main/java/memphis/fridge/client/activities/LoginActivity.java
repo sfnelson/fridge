@@ -2,12 +2,10 @@ package memphis.fridge.client.activities;
 
 import com.google.gwt.activity.shared.AbstractActivity;
 import com.google.gwt.event.shared.EventBus;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import javax.inject.Inject;
-import memphis.fridge.client.rpc.NonceRequest;
-import memphis.fridge.client.utils.Session;
+import memphis.fridge.client.rpc.Session;
 import memphis.fridge.client.views.LoginView;
 
 /**
@@ -31,11 +29,5 @@ public class LoginActivity extends AbstractActivity implements LoginView.Present
 		String username = view.getUser();
 		String password = view.getPass();
 		session.login(username, password);
-
-		session.getNonce(new NonceRequest() {
-			public void nonceReady(String nonce) {
-				Window.alert("login successful");
-			}
-		});
 	}
 }

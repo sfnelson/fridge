@@ -1,8 +1,13 @@
 package memphis.fridge.dao;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.persistence.EntityManager;
 import memphis.fridge.domain.Product;
+import memphis.fridge.domain.Purchase;
 import memphis.fridge.domain.User;
 
 /**
@@ -10,7 +15,13 @@ import memphis.fridge.domain.User;
  * Date: 30/09/12
  */
 public class PurchaseDAO {
-	public void createPurchase(User user, Product product, int count, BigDecimal cost, BigDecimal surplus) {
-		throw new UnsupportedOperationException();
+
+	@Inject
+	Provider<EntityManager> em;
+
+	public Purchase createPurchase(User user, Product product, int count, BigDecimal cost, BigDecimal surplus) {
+		Purchase p = new Purchase(user, product, new Date(), count, cost, surplus);
+		em.get().persist(p);
+		return p;
 	}
 }

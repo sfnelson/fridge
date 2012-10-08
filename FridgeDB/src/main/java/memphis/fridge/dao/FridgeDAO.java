@@ -21,4 +21,18 @@ public class FridgeDAO {
 		result = result.setScale(1);
 		return result;
 	}
+
+	public BigDecimal getMinimumUserBalance() {
+		Query q = em.createNativeQuery("SELECT value FROM numerical_variables WHERE variable = 'minimum_user_balance'");
+		BigDecimal result = (BigDecimal) q.getSingleResult();
+		result = result.setScale(2);
+		return result;
+	}
+
+	public BigDecimal getMinimumAdministratorBalance() {
+		Query q = em.createNativeQuery("SELECT value FROM numerical_variables WHERE variable = 'minimum_administrator_balance'");
+		BigDecimal result = (BigDecimal) q.getSingleResult();
+		result = result.setScale(2);
+		return result;
+	}
 }

@@ -1,4 +1,5 @@
-<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+        >
     <ui:style>
         .code {
             display: inline-block;
@@ -28,7 +29,7 @@
             overflow: hidden;
         }
     </ui:style>
-    <ui:with field="value" type="memphis.fridge.client.rpc.Product"/>
+    <ui:with field="value" type="memphis.fridge.client.rpc.PurchaseEntry"/>
     <div>
         <span class="{style.code}">
             <ui:text from='{value.getProductCode}'/>
@@ -37,10 +38,10 @@
             <ui:text from='{value.getDescription}'/>
         </span>
         <span class="{style.stock}">
-            <ui:text from='{value.getInStockText}'/>
+            <ui:text from='{value.getNumberText}'/>
         </span>
         <span class="{style.price}">
-            <ui:text from='{value.getPriceText}'/>
+            <ui:text from='{value.getCostText}'/>
         </span>
     </div>
 </ui:UiBinder>

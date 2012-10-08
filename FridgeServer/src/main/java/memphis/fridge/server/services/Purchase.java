@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.google.inject.persist.Transactional;
 import javax.inject.Inject;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import memphis.fridge.dao.*;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
@@ -81,8 +83,7 @@ public class Purchase {
 		/* Create a transaction record for this purchase */
 		creditLog.createPurchase(user, totalCost);
 
-		return new PurchaseResponse(username,
-				snonce,
+		return new PurchaseResponse(users, username, snonce,
 				toCents(users.retrieveUser(username).getBalance()),
 				toCents(totalCost));
 	}
@@ -95,11 +96,19 @@ public class Purchase {
 		return sum;
 	}
 
-	private class PurchaseResponse extends HMACResponse {
+	@XmlRootElement(name = "methodResponse")
+	private static class PurchaseResponse extends HMACResponse {
+
+		@XmlElement(name = "balance")
 		int balance;
+
+		@XmlElement(name = "order_total")
 		int order_total;
 
-		PurchaseResponse(String username, String snonce, int balance, int order_total) {
+		PurchaseResponse() {
+		}
+
+		PurchaseResponse(UserDAO users, String username, String snonce, int balance, int order_total) {
 			super(users, username, snonce, balance, order_total);
 			this.balance = balance;
 			this.order_total = order_total;

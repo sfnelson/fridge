@@ -2,6 +2,10 @@ package memphis.fridge.dao;
 
 import java.math.BigDecimal;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.persistence.EntityManager;
+import memphis.fridge.domain.CreditLogEntry;
 import memphis.fridge.domain.User;
 
 /**
@@ -9,7 +13,11 @@ import memphis.fridge.domain.User;
  * Date: 6/10/12
  */
 public class CreditLogDAO {
-	public void createPurchase(User user, BigDecimal costGrad) {
-		throw new UnsupportedOperationException();
+
+	@Inject
+	Provider<EntityManager> em;
+
+	public void createPurchase(User user, BigDecimal amount) {
+		em.get().persist(CreditLogEntry.createPurchase(user, amount));
 	}
 }

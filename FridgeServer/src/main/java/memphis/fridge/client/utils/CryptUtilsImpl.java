@@ -1,12 +1,15 @@
 package memphis.fridge.client.utils;
 
 import java.util.Random;
+import java.util.logging.Logger;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 30/09/12
  */
 public final class CryptUtilsImpl implements CryptUtils {
+
+	private static final Logger log = Logger.getLogger("crypt");
 
 	public static final String NONCE_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	public static final int NONCE_LENGTH = 20;
@@ -28,6 +31,7 @@ public final class CryptUtilsImpl implements CryptUtils {
 			if (i > 0) message.append(',');
 			message.append(toSign[i]);
 		}
+		log.info("signing: " + message.toString() + " with " + password);
 		return _sign(password, message.toString());
 	}
 

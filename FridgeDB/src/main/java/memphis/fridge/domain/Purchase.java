@@ -41,6 +41,7 @@ public class Purchase {
 		}
 	}
 
+	@NotNull
 	@EmbeddedId
 	private PurchaseId id;
 

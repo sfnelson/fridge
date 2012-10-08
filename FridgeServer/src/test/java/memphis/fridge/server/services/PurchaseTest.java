@@ -103,7 +103,8 @@ public class PurchaseTest {
 		p.products.consumeProduct(coke, ORDER_NUM_COKE);
 
 		BigDecimal num = BigDecimal.valueOf(ORDER_NUM_COKE);
-		p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad));
+		expect(p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad)))
+				.andReturn(null);
 		expect(p.products.findProduct("CT")).andThrow(new InvalidProductException("CT"));
 		test();
 	}
@@ -177,12 +178,14 @@ public class PurchaseTest {
 		Product coke = coke();
 		expect(p.products.findProduct("CC")).andReturn(coke);
 		p.products.consumeProduct(coke, ORDER_NUM_COKE);
-		p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad));
+		expect(p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad)))
+				.andReturn(null);
 
 		Product cookie = cookie();
 		expect(p.products.findProduct("CT")).andReturn(cookie);
 		p.products.consumeProduct(cookie, ORDER_NUM_COOKIE);
-		p.purchases.createPurchase(user, cookie, ORDER_NUM_COOKIE, orderCookieBase(), orderCookieTax(isGrad));
+		expect(p.purchases.createPurchase(user, cookie, ORDER_NUM_COOKIE, orderCookieBase(), orderCookieTax(isGrad)))
+				.andReturn(null);
 	}
 
 	private void expectUserUpdates(BigDecimal cost) {

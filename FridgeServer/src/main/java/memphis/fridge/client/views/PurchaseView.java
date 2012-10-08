@@ -1,8 +1,10 @@
 package memphis.fridge.client.views;
 
+import java.util.List;
+
 import com.google.gwt.user.client.ui.IsWidget;
 
-import memphis.fridge.client.rpc.Product;
+import memphis.fridge.client.rpc.PurchaseEntry;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -12,9 +14,11 @@ public interface PurchaseView extends IsWidget {
 
 	void setPresenter(Presenter presenter);
 
-	void addProduct(Product product, int count);
+	public void setCartContents(List<PurchaseEntry> content);
 
 	interface Presenter {
-		void addToOrder(String code, String num);
+		void addToOrder(String code, int num);
+
+		void submitOrder();
 	}
 }

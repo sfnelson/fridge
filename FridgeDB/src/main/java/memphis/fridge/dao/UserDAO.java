@@ -4,12 +4,13 @@ import java.math.BigDecimal;
 import java.util.logging.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.persist.Transactional;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.FridgeException;
+import memphis.fridge.exceptions.InsufficientFundsException;
+import memphis.fridge.exceptions.InvalidUserException;
 import memphis.fridge.utils.CryptUtils;
 
 /**
@@ -23,14 +24,15 @@ public class UserDAO {
 	@Inject
 	Provider<EntityManager> em;
 
-	@Transactional
+	@Inject
+	FridgeDAO fridge;
+
 	public void createGraduateUser(String username, String fullName, String email, String password) {
 		User user = new User(username, fullName, email, password);
 		user.setGrad(true);
 		em.get().persist(user);
 	}
 
-	@Transactional
 	public void transferFunds(String fromUser, String toUser, BigDecimal amount) {
 		throw new UnsupportedOperationException();
 	}
@@ -40,19 +42,31 @@ public class UserDAO {
 	}
 
 	public void checkValidUser(String username) {
-		throw new UnsupportedOperationException();
+		User user = retrieveUser(username);
+		if (user == null || !user.isEnabled()) {
+			throw new InvalidUserException(username);
+		}
 	}
 
 	public void checkSufficientBalance(String username, BigDecimal required) {
-		throw new UnsupportedOperationException();
+		User user = retrieveUser(username);
+		BigDecimal min = fridge.getMinimumUserBalance();
+		if (user.isAdmin()) {
+			min = fridge.getMinimumAdministratorBalance();
+		}
+		if (min.add(required).compareTo(user.getBalance()) > 0) {
+			throw new InsufficientFundsException(username, user.getBalance());
+		}
 	}
 
-    public void checkAdmin(String username) {
-        throw new UnsupportedOperationException();
-    }
+	public void checkAdmin(String username) {
+		User user = retrieveUser(username);
+		if (!user.isAdmin()) {
+			throw new FridgeException(1, "user is not an admin");
+		}
+	}
 
 	public void validateHMAC(String username, String hmac, Object... toValidate) throws FridgeException {
-
 		String password = getPassword(username);
 
 		if (password == null) {
@@ -83,7 +97,9 @@ public class UserDAO {
 		return user.getPassword();
 	}
 
-	public void removeFunds(User user, BigDecimal costGrad) {
-		throw new UnsupportedOperationException();
+	public void removeFunds(User user, BigDecimal cost) {
+		user = em.get().find(User.class, user.getUsername());
+		user.setBalance(user.getBalance().subtract(cost));
+		em.get().merge(user);
 	}
 }

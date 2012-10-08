@@ -16,6 +16,10 @@ public class PurchasePlace extends Place {
 		this.name = name;
 	}
 
+	public String getUsername() {
+		return name;
+	}
+
 	@Prefix("account")
 	public static class Tokenizer implements PlaceTokenizer<PurchasePlace> {
 		public PurchasePlace getPlace(String name) {

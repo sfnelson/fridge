@@ -9,6 +9,7 @@ import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import memphis.fridge.server.GenerateNonceRequest;
 import memphis.fridge.server.GetProductsRequest;
+import memphis.fridge.server.OrderRequest;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -24,6 +25,7 @@ public class FridgeWebServletConfig extends GuiceServletContextListener {
 
 				bind(GenerateNonceRequest.class);
 				bind(GetProductsRequest.class);
+				bind(OrderRequest.class);
 
 				filter("/fridge/rest/*").through(PersistFilter.class);
 				serve("/fridge/rest/*").with(GuiceContainer.class);

@@ -1,8 +1,26 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'
              xmlns:c='urn:import:com.google.gwt.user.cellview.client'>
-    <g:RenderablePanel>
-        <h1>Products</h1>
+    <ui:style>
+        .products {
+            position: relative;
+            margin: 1ex 0.5ex;
+            border: solid 1px #777;
+            padding: 1ex 0.5ex;
+            text-align: center;
+        }
+
+        .label {
+            position: absolute;
+            left: 1em;
+            top: 1px;
+            margin-top: -1ex;
+            padding: 0 1px;
+            background-color: #f5f5f5;
+        }
+    </ui:style>
+    <g:RenderablePanel styleName="{style.products}">
+        <div class="{style.label}">Products</div>
         <c:CellList ui:field="products"></c:CellList>
     </g:RenderablePanel>
 </ui:UiBinder>

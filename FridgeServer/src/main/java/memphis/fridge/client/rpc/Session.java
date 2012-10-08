@@ -1,5 +1,7 @@
 package memphis.fridge.client.rpc;
 
+import java.util.List;
+
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.place.shared.Place;
 import com.google.gwt.place.shared.PlaceController;
@@ -27,15 +29,22 @@ public class Session {
 	PlaceController place;
 
 	@Inject
-	Provider<RequestNonce> request;
+	Provider<RequestNonce> nonceRequest;
+
+	@Inject
+	Provider<RequestPurchase> purchaseRequest;
 
 	@Inject
 	Provider<Scheduler> scheduler;
 
+	public boolean isLoggedIn() {
+		return username != null && password_md5 != null;
+	}
+
 	public void login(final String username, final String password) {
 		this.username = username;
 		this.password_md5 = crypt.md5(password);
-		request.get().requestNonce(username, new RequestNonce.NonceResponseHandler() {
+		requestNonce(new RequestNonce.NonceResponseHandler() {
 			public void onNonceReceived(String nonce) {
 				Session.this.nonce = nonce;
 				goTo(new PurchasePlace(username));
@@ -54,6 +63,29 @@ public class Session {
 		this.username = null;
 		this.password_md5 = null;
 		this.nonce = null;
+		goTo(LoginPlace.LOGIN);
+	}
+
+	public void requestNonce(RequestNonce.NonceResponseHandler callback) {
+		if (nonce != null) {
+			String nonce = this.nonce;
+			this.nonce = null;
+			callback.onNonceReceived(nonce);
+		} else {
+			nonceRequest.get().requestNonce(username, callback);
+		}
+	}
+
+	public void placeOrder(final List<PurchaseEntry> content, final RequestPurchase.OrderResponseHandler callback) {
+		requestNonce(new RequestNonce.NonceResponseHandler() {
+			public void onNonceReceived(String nonce) {
+				purchaseRequest.get().requestOrder(nonce, username, content, callback);
+			}
+
+			public void onError(Throwable exception) {
+				callback.onError(exception);
+			}
+		});
 	}
 
 	String sign(Object... request) {

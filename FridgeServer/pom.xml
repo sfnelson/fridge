@@ -13,7 +13,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <gwt.version>2.5.0-rc1</gwt.version>
+        <gwt.version>2.5.0-rc2</gwt.version>
         <gwt.style>PRETTY</gwt.style>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -92,6 +92,13 @@
         </dependency>
 
     </dependencies>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>gwt-maven-plugin staging</id>
+            <url>https://nexus.codehaus.org/content/groups/staging/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <plugins>

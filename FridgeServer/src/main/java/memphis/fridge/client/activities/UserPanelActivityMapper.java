@@ -22,7 +22,7 @@ public class UserPanelActivityMapper implements ActivityMapper {
 
 	public Activity getActivity(Place place) {
 		if (place instanceof PurchasePlace) {
-			return purchase.get();
+			return purchase.get().init(((PurchasePlace) place).getUsername());
 		}
 
 		return login.get();

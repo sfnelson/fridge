@@ -11,7 +11,8 @@ import javax.validation.constraints.Size;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 29/09/12
  */
-@Entity(name = "users")
+@Entity
+@Table(name = "users")
 public class User {
 
 	@Id
@@ -27,7 +28,7 @@ public class User {
 
 	@Nullable
 	@Size(max = 60)
-	@Column(name = "real_name", length = 60)
+	@Column(name = "real_name", length = 60, nullable = true)
 	private String realName;
 
 	@Nullable
@@ -36,28 +37,23 @@ public class User {
 	private String email;
 
 	@NotNull
-	@Column(name = "balance", precision = 9, scale = 2)
+	@Column(name = "balance", precision = 9, scale = 2, nullable = false)
 	private BigDecimal balance;
 
-	@NotNull
 	@Column(name = "isadmin", nullable = false)
 	private boolean isAdmin;
 
-	@NotNull
 	@Column(name = "isgrad", nullable = false)
 	private boolean isGrad;
 
 	@Nullable
-	@Size(max = 20)
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "sponsor", referencedColumnName = "username")
 	private User sponsor;
 
-	@NotNull
 	@Column(name = "enabled", nullable = false)
 	private boolean enabled;
 
-	@NotNull
 	@Column(name = "isinterfridge", nullable = false)
 	private boolean isInterfridge;
 

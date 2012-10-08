@@ -1,13 +1,31 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:c='urn:import:com.google.gwt.user.cellview.client'
         >
     <ui:style>
+        .purchase {
+            position: relative;
+            margin: 1ex 0.5ex;
+            border: solid 1px #777;
+            padding: 1ex 0.5ex;
+        }
+
+        .label {
+            position: absolute;
+            left: 1em;
+            top: 1px;
+            margin-top: -1ex;
+            padding: 0 1px;
+            background-color: #f5f5f5;
+        }
+
         .add dt, .add dd {
             margin: 0;
             display: inline;
         }
     </ui:style>
-    <g:RenderablePanel>
+    <g:RenderablePanel styleName="{style.purchase}">
+        <div class="{style.label}">Purchase</div>
         <dl class="{style.add}">
             <dt>Product Code:</dt>
             <dd>
@@ -15,11 +33,12 @@
             </dd>
             <dt>Number:</dt>
             <dd>
-                <g:TextBox ui:field="amount"/>
+                <g:TextBox ui:field="amount">1</g:TextBox>
             </dd>
             <dd>
                 <g:Button ui:field="add">Add</g:Button>
             </dd>
         </dl>
+        <c:CellList ui:field="cart"></c:CellList>
     </g:RenderablePanel>
 </ui:UiBinder>

@@ -1,5 +1,6 @@
 package memphis.fridge.domain;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 import javax.persistence.*;
@@ -15,7 +16,7 @@ import javax.validation.constraints.NotNull;
 		@NamedQuery(name = "Products.findEnabled",
 				query = "SELECT p FROM Product p WHERE p.enabled = true")
 })
-public class Product {
+public class Product implements Serializable {
 
 	@Id
 	@NotNull
@@ -55,19 +56,19 @@ public class Product {
 	}
 
 	public Product(String productCode, String description, BigDecimal cost, BigDecimal markup, ProductCategory category) {
-        this(productCode, description, cost, markup, 0, 0, category);
+		this(productCode, description, cost, markup, 0, 0, category);
 	}
 
-    public Product(String productCode, String description, BigDecimal cost, BigDecimal markup, int inStock, int stockLowMark, ProductCategory category) {
-        this.productCode = productCode;
-        this.description = description;
-        this.cost = cost;
-        this.markup = markup;
-        this.enabled = true;
-        this.category = category;
-        this.inStock = inStock;
-        this.stockLowMark = stockLowMark;
-    }
+	public Product(String productCode, String description, BigDecimal cost, BigDecimal markup, int inStock, int stockLowMark, ProductCategory category) {
+		this.productCode = productCode;
+		this.description = description;
+		this.cost = cost;
+		this.markup = markup;
+		this.enabled = true;
+		this.category = category;
+		this.inStock = inStock;
+		this.stockLowMark = stockLowMark;
+	}
 
 	public String getProductCode() {
 		return productCode;
@@ -129,35 +130,35 @@ public class Product {
 		this.stockLowMark = stockLowMark;
 	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 
-        Product product = (Product) o;
+		Product product = (Product) o;
 
-        if (enabled != product.enabled) return false;
-        if (inStock != product.inStock) return false;
-        if (stockLowMark != product.stockLowMark) return false;
-        if (!category.equals(product.category)) return false;
-        if (!cost.equals(product.cost)) return false;
-        if (!description.equals(product.description)) return false;
-        if (!markup.equals(product.markup)) return false;
-        if (!productCode.equals(product.productCode)) return false;
+		if (enabled != product.enabled) return false;
+		if (inStock != product.inStock) return false;
+		if (stockLowMark != product.stockLowMark) return false;
+		if (!category.equals(product.category)) return false;
+		if (!cost.equals(product.cost)) return false;
+		if (!description.equals(product.description)) return false;
+		if (!markup.equals(product.markup)) return false;
+		if (!productCode.equals(product.productCode)) return false;
 
-        return true;
-    }
+		return true;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = productCode.hashCode();
-        result = 31 * result + description.hashCode();
-        result = 31 * result + cost.hashCode();
-        result = 31 * result + markup.hashCode();
-        result = 31 * result + (enabled ? 1 : 0);
-        result = 31 * result + category.hashCode();
-        result = 31 * result + inStock;
-        result = 31 * result + stockLowMark;
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		int result = productCode.hashCode();
+		result = 31 * result + description.hashCode();
+		result = 31 * result + cost.hashCode();
+		result = 31 * result + markup.hashCode();
+		result = 31 * result + (enabled ? 1 : 0);
+		result = 31 * result + category.hashCode();
+		result = 31 * result + inStock;
+		result = 31 * result + stockLowMark;
+		return result;
+	}
 }

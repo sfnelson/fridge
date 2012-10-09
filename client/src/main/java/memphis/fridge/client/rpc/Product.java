@@ -2,6 +2,8 @@ package memphis.fridge.client.rpc;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.safehtml.shared.SafeUri;
+import com.google.gwt.safehtml.shared.UriUtils;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -49,4 +51,9 @@ public class Product extends JavaScriptObject {
 	public final native int getCategoryOrder() /*-{
 		return this.category_order;
 	}-*/;
+
+	public final SafeUri getImageHref() {
+		return UriUtils.fromTrustedString("/memphis/fridge/rest/images?product="
+				+ UriUtils.encode(getProductCode()));
+	}
 }

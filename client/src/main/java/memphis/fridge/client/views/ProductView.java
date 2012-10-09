@@ -12,6 +12,12 @@ import memphis.fridge.client.rpc.Product;
  */
 public interface ProductView extends IsWidget {
 
+	void setPresenter(Presenter presenter);
+
 	void setProducts(List<? extends Product> products);
+
+	interface Presenter {
+		void productSelected(Product product);
+	}
 
 }

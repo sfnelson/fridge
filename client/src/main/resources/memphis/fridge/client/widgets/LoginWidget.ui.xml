@@ -1,59 +1,89 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
-    <ui:style>
+    <ui:style type="memphis.fridge.client.widgets.LoginWidget.Style">
         .login {
             position: relative;
-            margin: 1ex 0.5ex;
-            border: solid 1px #777;
-            padding: 1ex 0.5ex;
             text-align: center;
-        }
-
-        .label {
-            position: absolute;
-            left: 1em;
-            top: 1px;
-            margin-top: -1ex;
-            padding: 0 1px;
-            background-color: #f5f5f5;
         }
 
         .login h1 {
             font-size: 42px;
             margin: 0;
+            margin-top: 2em;
             padding: 0.5ex 0;
         }
 
         .login table {
             margin: 0 auto;
+            margin-top: 2em;
             width: 16em;
         }
 
         .login input {
-            font-size: 120%;
-            margin: 0.2em 0.5em;
-            width: 8em;
+            width: 6em;
+            margin: 0 0.5em;
         }
+
+        .label {
+            color: #aaa;
+            -webkit-transition: color linear .2s;
+        }
+
+        .hasFocus .label {
+            color: black;
+        }
+
+        .message {
+            padding: 1em 0;
+            height: 1em;
+            overflow: visible;
+        }
+
+        .message > span {
+            display: inline-block;
+            color: #333;
+            background-color: #ee838a;
+            border-radius: 1em;
+            border: solid 1px #dd434f;
+            padding: 0 1em;
+            font-weight: 200;
+            opacity: 0;
+            -webkit-transition: opacity 0.2s;
+            -moz-transition: opacity 0.2s;
+            -o-transition: opacity 0.2s;
+            transition: opacity 0.2s;
+        }
+
+        .message > span.show {
+            opacity: 1;
+            -webkit-transition: opacity 0.5s;
+            -moz-transition: opacity 0.5s;
+            -o-transition: opacity 0.5s;
+            transition: opacity 0.5s;
+        }
+
     </ui:style>
     <g:RenderablePanel styleName="{style.login}">
-        <div class="{style.label}">Login</div>
         <h1>Welcome to Fridge</h1>
         <table>
             <tr>
                 <td>
-                    <g:Label>Username:</g:Label>
+                    <g:Label styleName="{style.label}">username</g:Label>
                     <g:TextBox ui:field="username"></g:TextBox>
                 </td>
                 <td>
-                    <g:Label>Password:</g:Label>
+                    <g:Label styleName="{style.label}">password</g:Label>
                     <g:PasswordTextBox ui:field="password"></g:PasswordTextBox>
                 </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <g:Label ui:field="message">Enter username and password, then press enter</g:Label>
+                <td>
+                    <g:Label styleName="{style.label}">&nbsp;</g:Label>
+                    <g:Button ui:field="login">Login</g:Button>
                 </td>
             </tr>
         </table>
+        <div class="{style.message}">
+            <g:InlineLabel ui:field="message"></g:InlineLabel>
+        </div>
     </g:RenderablePanel>
 </ui:UiBinder>

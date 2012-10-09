@@ -26,12 +26,6 @@
         </dependency>
 
         <dependency>
-            <groupId>memphis.fridge</groupId>
-            <artifactId>fridge-client</artifactId>
-            <version>[1.0.0-SNAPSHOT,]</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-servlet</artifactId>
             <version>[3.0.0,]</version>
@@ -57,11 +51,19 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/webapp</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>[8.0.0,]</version>
+                <version>8.1.0.RC5</version>
                 <configuration>
                     <scanIntervalSeconds>0</scanIntervalSeconds>
                     <stopKey>stop</stopKey>
@@ -72,6 +74,35 @@
                     <webAppSourceDirectory>
                         ${project.build.directory}/${project.build.finalName}
                     </webAppSourceDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.5.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>memphis.fridge</groupId>
+                            <artifactId>fridge-client</artifactId>
+                            <version>1.0.0-SNAPSHOT</version>
+                            <overWrite>true</overWrite>
+                        </artifactItem>
+                    </artifactItems>
+                    <excludes>*</excludes>
+                    <includes>client/**</includes>
+                    <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+                    <overWriteReleases>false</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
                 </configuration>
             </plugin>
         </plugins>

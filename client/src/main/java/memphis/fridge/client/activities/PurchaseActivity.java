@@ -13,6 +13,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import memphis.fridge.client.events.ProductEvent;
+import memphis.fridge.client.events.ProductHandler;
 import memphis.fridge.client.rpc.*;
 import memphis.fridge.client.utils.NumberUtils;
 import memphis.fridge.client.views.PurchaseView;
@@ -21,7 +23,7 @@ import memphis.fridge.client.views.PurchaseView;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-public class PurchaseActivity extends AbstractActivity implements PurchaseView.Presenter, RequestProducts.ProductRequestHandler {
+public class PurchaseActivity extends AbstractActivity implements PurchaseView.Presenter, RequestProducts.ProductRequestHandler, ProductHandler {
 
 	private static final Logger log = Logger.getLogger("purchase");
 
@@ -53,14 +55,40 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 		refreshProducts();
 		refreshView();
 		panel.setWidget(view);
+
+		ProductEvent.register(eventBus, this);
+	}
+
+	@Override
+	public String mayStop() {
+		if (!order.isEmpty()) {
+			return "Do you want to abandon your order?";
+		}
+		return null;
+	}
+
+	@Override
+	public void onStop() {
+		view.setPresenter(null);
+	}
+
+	public void productSelected(Product p) {
+		addToOrder(p.getProductCode(), 1);
+		view.setProduct(p.getProductCode());
 	}
 
 	public void addToOrder(String code, int num) {
+		code = code.toUpperCase();
 		if (products == null || products.containsKey(code)) {
 			if (order.containsKey(code)) {
-				order.put(code, order.get(code) + num);
+				int count = order.get(code) + num;
+				if (count != 0) {
+					order.put(code, order.get(code) + num);
+				} else {
+					order.remove(code);
+				}
 			} else {
-				order.put(code, Integer.valueOf(num));
+				order.put(code, num);
 			}
 		}
 		refreshView();
@@ -115,7 +143,7 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	public void productsReady(List<? extends Product> products) {
 		this.products = Maps.newHashMap();
 		for (Product p : products) {
-			this.products.put(p.getProductCode(), p);
+			this.products.put(p.getProductCode().toUpperCase(), p);
 		}
 		List<String> toRemove = Lists.newArrayList();
 		for (String code : order.keySet()) {

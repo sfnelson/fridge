@@ -4,23 +4,15 @@
     <ui:style>
         .products {
             position: relative;
-            margin: 1ex 0.5ex;
-            border: solid 1px #777;
-            padding: 1ex 0.5ex;
+            margin: 1em 10em;
             text-align: center;
         }
 
-        .label {
-            position: absolute;
-            left: 1em;
-            top: 1px;
-            margin-top: -1ex;
-            padding: 0 1px;
-            background-color: #f5f5f5;
+        .list > div > div {
+            display: inline-block;
         }
     </ui:style>
     <g:RenderablePanel styleName="{style.products}">
-        <div class="{style.label}">Products</div>
-        <c:CellList ui:field="products"></c:CellList>
+        <c:CellList ui:field="products" styleName="{style.list}"></c:CellList>
     </g:RenderablePanel>
 </ui:UiBinder>

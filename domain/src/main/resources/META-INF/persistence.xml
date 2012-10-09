@@ -13,12 +13,14 @@
         <class>memphis.fridge.domain.Nonce</class>
         <class>memphis.fridge.domain.Product</class>
         <class>memphis.fridge.domain.ProductCategory</class>
+        <class>memphis.fridge.domain.ProductImage</class>
         <class>memphis.fridge.domain.Purchase</class>
         <class>memphis.fridge.domain.User</class>
 
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge"/>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <!--<property name="hibernate.show_sql" value="true"/>-->
         </properties>
     </persistence-unit>
 
@@ -31,6 +33,7 @@
         <class>memphis.fridge.domain.Nonce</class>
         <class>memphis.fridge.domain.Product</class>
         <class>memphis.fridge.domain.ProductCategory</class>
+        <class>memphis.fridge.domain.ProductImage</class>
         <class>memphis.fridge.domain.Purchase</class>
         <class>memphis.fridge.domain.User</class>
 
@@ -38,6 +41,7 @@
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge-test"/>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.validation.mode" value=""/>
+            <!--<property name="hibernate.show_sql" value="true"/>-->
         </properties>
     </persistence-unit>
 

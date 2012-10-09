@@ -1,44 +1,70 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'
              xmlns:c='urn:import:com.google.gwt.user.cellview.client'
         >
-    <ui:style>
+    <ui:style type="memphis.fridge.client.widgets.PurchaseWidget.Style">
         .purchase {
             position: relative;
-            margin: 1ex 0.5ex;
-            border: solid 1px #777;
-            padding: 1ex 0.5ex;
+            margin: 2em 0;
         }
 
-        .label {
-            position: absolute;
-            left: 1em;
-            top: 1px;
-            margin-top: -1ex;
-            padding: 0 1px;
-            background-color: #f5f5f5;
+        .purchase table {
+            margin: 0 auto;
+            margin-top: 2em;
+            width: 16em;
+            text-align: center;
         }
 
-        .add dt, .add dd {
-            margin: 0;
-            display: inline;
+        .purchase input {
+            width: 6em;
+            margin: 0 0.5em;
+        }
+
+        .purchase label {
+            color: #aaa;
+            -webkit-transition: color linear .2s;
+        }
+
+        .purchase .hasFocus label {
+            color: black;
+        }
+
+        .amount {
+            text-align: right;
+        }
+
+        .info {
+        }
+
+        .cart {
+            margin: 1em auto;
+            width: 20em;
         }
     </ui:style>
     <g:RenderablePanel styleName="{style.purchase}">
-        <div class="{style.label}">Purchase</div>
-        <dl class="{style.add}">
-            <dt>Product Code:</dt>
-            <dd>
-                <g:TextBox ui:field="product"/>
-            </dd>
-            <dt>Number:</dt>
-            <dd>
-                <g:TextBox ui:field="amount">1</g:TextBox>
-            </dd>
-            <dd>
-                <g:Button ui:field="add">Add</g:Button>
-            </dd>
-        </dl>
-        <c:CellList ui:field="cart"></c:CellList>
+        <table>
+            <tr>
+                <td>
+                    <label>product</label>
+                    <g:TextBox ui:field="product"/>
+                </td>
+                <td>
+                    <label>amount</label>
+                    <g:TextBox ui:field="amount" styleName="{style.amount}"/>
+                </td>
+                <td>
+                    <label>&nbsp;</label>
+                    <g:Button ui:field="add">Add</g:Button>
+                </td>
+            </tr>
+        </table>
+        <div class="{style.info}">
+            <g:Label ui:field="name"></g:Label>
+            <g:Label ui:field="type"></g:Label>
+            <g:Label ui:field="balance"></g:Label>
+            <g:Label ui:field="total"></g:Label>
+        </div>
+        <c:CellList ui:field="cart" styleName="{style.cart}"></c:CellList>
     </g:RenderablePanel>
 </ui:UiBinder>

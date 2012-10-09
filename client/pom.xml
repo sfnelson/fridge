@@ -44,36 +44,20 @@
     </pluginRepositories>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.build.directory}/gwtOutput</directory>
+            </resource>
+        </resources>
         <plugins>
-            <!--<plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>gwt-maven-plugin</artifactId>
-                <version>2.5.0-rc2</version>
-                <configuration>
-                    <module>memphis.fridge.FridgeClient</module>
-                    <runTarget>/index.html</runTarget>
-                    <strict>true</strict>
-                    <logLevel>INFO</logLevel>
-                    <style>${gwt.style}</style>
-                    <copyWebapp>true</copyWebapp>
-                    <compileReport>false</compileReport>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>gwtcompile</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
-
             <!-- GWT Maven Plugin -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
-                <version>${gwt.version}</version>
+                <version>2.5.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
@@ -82,6 +66,20 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <webappDirectory>${project.build.directory}/gwtOutput</webappDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <includes>
+                        <include>client/**</include>
+                    </includes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

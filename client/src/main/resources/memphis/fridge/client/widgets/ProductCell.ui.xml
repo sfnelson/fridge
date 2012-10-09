@@ -1,46 +1,91 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
     <ui:style>
-        .code {
-            display: inline-block;
-            width: 2.5em;
-            text-align: left;
+        .item {
+            margin: 1ex;
+            border: solid 2px #ccc;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+            -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+            -webkit-transition: border linear .2s, box-shadow linear .2s;
+            -moz-transition: border linear .2s, box-shadow linear .2s;
+            -o-transition: border linear .2s, box-shadow linear .2s;
+            transition: border linear .2s, box-shadow linear .2s;
+            -webkit-border-radius: 3px;
+            -moz-border-radius: 3px;
+            border-radius: 3px;
+        }
+
+        .item > div {
+            position: relative;
             overflow: hidden;
+            width: 10em;
+            height: 10em;
+        }
+
+        .desc, .caption {
+            position: absolute;
+            left: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            height: 3ex;
+            line-height: 3ex;
+            vertical-align: middle;
+            padding: 0 2px;
         }
 
         .desc {
-            display: inline-block;
-            width: 10em;
-            text-align: left;
-            overflow: hidden;
+            top: 0;
         }
 
-        .stock {
-            display: inline-block;
-            width: 3em;
-            text-align: right;
-            overflow: hidden;
+        .caption {
+            bottom: 0;
+        }
+
+        .code {
+            float: left;
         }
 
         .price {
-            display: inline-block;
-            width: 3.5em;
-            text-align: right;
-            overflow: hidden;
+            float: right;
         }
+
+        .image {
+            height: 10em;
+        }
+
+        .item .desc, .item .code, .item .price, .item .caption {
+            opacity: 0;
+            -webkit-transition: opacity linear 0.2s;
+        }
+
+        .item:hover .caption, .item:hover .desc, .item:hover .code, .item:hover .price {
+            opacity: 1;
+            -webkit-transition: opacity linear 0.2s;
+        }
+
     </ui:style>
     <ui:with field="value" type="memphis.fridge.client.rpc.Product"/>
-    <div>
-        <span class="{style.code}">
-            <ui:text from='{value.getProductCode}'/>
-        </span>
-        <span class="{style.desc}">
-            <ui:text from='{value.getDescription}'/>
-        </span>
-        <span class="{style.stock}">
-            <ui:text from='{value.getInStockText}'/>
-        </span>
-        <span class="{style.price}">
-            <ui:text from='{value.getPriceText}'/>
-        </span>
+    <div class="{style.item}">
+        <div>
+            <span class="{style.desc}">
+                <ui:text from='{value.getDescription}'/>
+            </span>
+
+            <span class="{style.caption}">
+                <span class="{style.code}">
+                    <ui:text from='{value.getProductCode}'/>
+                </span>
+
+                <span class="{style.price}">
+                    <ui:text from='{value.getPriceText}'/>
+                </span>
+            </span>
+
+            <!--<span class="{style.stock}">
+                <ui:text from='{value.getInStockText}'/>
+            </span>-->
+
+            <img class="{style.image}" src="{value.getImageHref}" alt="{value.getDescription}"/>
+        </div>
     </div>
 </ui:UiBinder>

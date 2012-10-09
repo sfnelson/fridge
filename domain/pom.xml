@@ -32,7 +32,6 @@
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>[9,]</version>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>

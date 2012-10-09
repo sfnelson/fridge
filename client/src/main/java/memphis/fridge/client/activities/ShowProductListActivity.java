@@ -1,6 +1,7 @@
 package memphis.fridge.client.activities;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.google.gwt.activity.shared.AbstractActivity;
 import com.google.gwt.event.shared.EventBus;
@@ -8,7 +9,7 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
+import memphis.fridge.client.events.ProductEvent;
 import memphis.fridge.client.rpc.Product;
 import memphis.fridge.client.rpc.RequestProducts;
 import memphis.fridge.client.views.ProductView;
@@ -17,15 +18,22 @@ import memphis.fridge.client.views.ProductView;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-public class ShowProductListActivity extends AbstractActivity implements RequestProducts.ProductRequestHandler {
+public class ShowProductListActivity extends AbstractActivity
+		implements RequestProducts.ProductRequestHandler, ProductView.Presenter {
+
+	private static final Logger log = Logger.getLogger("product list");
 
 	@Inject
-    ProductView view;
+	ProductView view;
 
 	@Inject
 	Provider<RequestProducts> req;
 
+	@Inject
+	EventBus eventBus;
+
 	public void start(AcceptsOneWidget panel, EventBus eventBus) {
+		view.setPresenter(this);
 		panel.setWidget(view);
 
 		req.get().requestProducts(null, this);
@@ -33,5 +41,10 @@ public class ShowProductListActivity extends AbstractActivity implements Request
 
 	public void productsReady(List<? extends Product> products) {
 		view.setProducts(products);
+	}
+
+	public void productSelected(Product product) {
+		log.info(product.getProductCode() + " selected");
+		eventBus.fireEvent(new ProductEvent(product));
 	}
 }

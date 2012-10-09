@@ -5,7 +5,6 @@ import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import javax.inject.Inject;
-
 import memphis.fridge.client.rpc.Session;
 import memphis.fridge.client.views.LoginView;
 
@@ -19,11 +18,16 @@ public class LoginActivity extends AbstractActivity implements LoginView.Present
 	LoginView view;
 
 	@Inject
-    Session session;
+	Session session;
 
 	public void start(AcceptsOneWidget panel, EventBus eventBus) {
 		view.setPresenter(this);
 		panel.setWidget(view);
+	}
+
+	@Override
+	public void onStop() {
+		view.setPresenter(null);
 	}
 
 	public void doLogin() {

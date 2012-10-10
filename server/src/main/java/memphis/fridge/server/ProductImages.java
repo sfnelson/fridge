@@ -23,14 +23,14 @@ public class ProductImages {
 	String product;
 
 	@PUT
-	@Consumes("image/jpg")
+	@Consumes("image/jpeg")
 	public Response storeImage(byte[] image) {
 		products.storeProductImage(product, image);
 		return Response.noContent().build();
 	}
 
 	@GET
-	@Produces("image/jpg")
+	@Produces("image/jpeg")
 	public Response retrieveImage() {
 		byte[] image = products.getProductImage(product);
 		if (image == null) return Response.status(Response.Status.NOT_FOUND).build();

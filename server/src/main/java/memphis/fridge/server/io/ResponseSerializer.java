@@ -17,6 +17,8 @@ public interface ResponseSerializer<O, L> {
 
 		void visitInteger(String name, int value);
 
+		void visitBoolean(String name, boolean value);
+
 		ListSerializer visitList(String name);
 	}
 

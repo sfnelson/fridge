@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
 import javax.inject.Inject;
-
 import memphis.fridge.client.views.FridgeView;
 
 /**
@@ -19,6 +18,9 @@ import memphis.fridge.client.views.FridgeView;
 public class FridgeWidget extends Composite implements FridgeView {
 	public interface Binder extends UiBinder<HTMLPanel, FridgeWidget> {
 	}
+
+	@UiField
+	SimplePanel account;
 
 	@UiField
 	SimplePanel user;
@@ -33,6 +35,10 @@ public class FridgeWidget extends Composite implements FridgeView {
 	@Inject
 	FridgeWidget(Binder binder) {
 		initWidget(binder.createAndBindUi(this));
+	}
+
+	public AcceptsOneWidget getAccountPanel() {
+		return account;
 	}
 
 	public AcceptsOneWidget getUserPanel() {

@@ -5,10 +5,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiFactory;
@@ -22,6 +19,7 @@ import com.google.gwt.user.client.ui.TextBox;
 
 import javax.inject.Inject;
 import memphis.fridge.client.rpc.PurchaseEntry;
+import memphis.fridge.client.utils.NumberUtils;
 import memphis.fridge.client.views.PurchaseView;
 
 /**
@@ -40,6 +38,12 @@ public class PurchaseWidget extends Composite implements PurchaseView {
 		String info();
 
 		String amount();
+
+		String balance();
+
+		String total();
+
+		String cart();
 	}
 
 	Presenter presenter;
@@ -56,17 +60,17 @@ public class PurchaseWidget extends Composite implements PurchaseView {
 	@UiField
 	CellList<PurchaseEntry> cart;
 
-	@UiField
+	//@UiField
 	Label name;
 
-	@UiField
+	//@UiField
 	Label type;
 
 	@UiField
-	Label balance;
+	TextBox balance;
 
 	@UiField
-	Label total;
+	TextBox total;
 
 	PurchaseWidget() {
 		this(GWT.<Binder>create(Binder.class));
@@ -81,17 +85,21 @@ public class PurchaseWidget extends Composite implements PurchaseView {
 		this.presenter = presenter;
 		Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
 			public void execute() {
-				cart.setRowCount(0);
-				cart.setRowData(Collections.<PurchaseEntry>emptyList());
-				name.setText("");
-				type.setText("");
-				balance.setText("");
-				total.setText("");
-				product.setValue("");
-				amount.setValue("1");
-				product.setFocus(true);
+				//name.setText("");
+				//type.setText("");
+				balance.setValue("");
+				clearOrder();
 			}
 		});
+	}
+
+	public void clearOrder() {
+		cart.setRowCount(0);
+		cart.setRowData(Collections.<PurchaseEntry>emptyList());
+		total.setValue("");
+		product.setValue("");
+		amount.setValue("1");
+		product.setFocus(true);
 	}
 
 	public void setCartContents(List<PurchaseEntry> content) {
@@ -104,14 +112,22 @@ public class PurchaseWidget extends Composite implements PurchaseView {
 		}
 	}
 
+	public void setOrderDetails(int cost) {
+		total.setText(NumberUtils.printCurrency(cost).asString());
+	}
+
 	public void setProduct(final String productCode) {
 		Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
 			public void execute() {
-				product.setValue(productCode);
+				product.setValue("");
 				product.setFocus(true);
 				product.selectAll();
 			}
 		});
+	}
+
+	public void setBalance(int balance) {
+		this.balance.setValue(NumberUtils.printCurrency(balance).asString());
 	}
 
 	@UiHandler({"product", "amount", "add"})
@@ -143,6 +159,11 @@ public class PurchaseWidget extends Composite implements PurchaseView {
 	@UiHandler({"product", "amount"})
 	void blur(BlurEvent ev) {
 		ev.getRelativeElement().getParentElement().setClassName("");
+	}
+
+	@UiHandler({"buy"})
+	void purchase(ClickEvent ev) {
+		presenter.submitOrder();
 	}
 
 	@UiFactory

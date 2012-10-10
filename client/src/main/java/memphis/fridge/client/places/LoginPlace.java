@@ -10,9 +10,16 @@ import com.google.gwt.place.shared.Prefix;
  */
 public class LoginPlace extends Place {
 
-	public static final LoginPlace LOGIN = new LoginPlace();
+	public static final LoginPlace LOGIN = new LoginPlace(null);
 
-	private LoginPlace() {
+	private final String username;
+
+	public LoginPlace(String username) {
+		this.username = username;
+	}
+
+	public String getUsername() {
+		return username;
 	}
 
 	@Prefix("login")

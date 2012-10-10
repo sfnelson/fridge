@@ -33,6 +33,14 @@ public class JSONObjectSerializer implements ResponseSerializer.ObjectSerializer
 		}
 	}
 
+	public void visitBoolean(String name, boolean value) {
+		try {
+			result.put(name, value);
+		} catch (JSONException ex) {
+			log.warning("could not append pair: " + name + ", " + value);
+		}
+	}
+
 	public ResponseSerializer.ListSerializer visitList(String name) {
 		JSONListSerializer list = new JSONListSerializer();
 		try {

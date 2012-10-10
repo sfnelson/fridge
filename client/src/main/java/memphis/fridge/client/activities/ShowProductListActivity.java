@@ -18,8 +18,7 @@ import memphis.fridge.client.views.ProductView;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-public class ShowProductListActivity extends AbstractActivity
-		implements RequestProducts.ProductRequestHandler, ProductView.Presenter {
+public class ShowProductListActivity extends AbstractActivity implements ProductView.Presenter {
 
 	private static final Logger log = Logger.getLogger("product list");
 
@@ -36,11 +35,11 @@ public class ShowProductListActivity extends AbstractActivity
 		view.setPresenter(this);
 		panel.setWidget(view);
 
-		req.get().requestProducts(null, this);
-	}
-
-	public void productsReady(List<? extends Product> products) {
-		view.setProducts(products);
+		req.get().requestProducts(null, new RequestProducts.Handler() {
+			public void productsReady(List<? extends Product> products) {
+				view.setProducts(products);
+			}
+		});
 	}
 
 	public void productSelected(Product product) {

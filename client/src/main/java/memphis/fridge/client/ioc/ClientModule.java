@@ -13,20 +13,15 @@ import com.google.inject.Provides;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import memphis.fridge.client.activities.ProductPanelActivityMapper;
+import memphis.fridge.client.activities.SessionActivityMapper;
 import memphis.fridge.client.activities.UserPanelActivityMapper;
-import memphis.fridge.client.utils.CryptUtils;
-import memphis.fridge.client.views.FridgeView;
 import memphis.fridge.client.places.FridgePlaceMapper;
 import memphis.fridge.client.places.LoginPlace;
 import memphis.fridge.client.rpc.Session;
+import memphis.fridge.client.utils.CryptUtils;
 import memphis.fridge.client.utils.CryptUtilsImpl;
-import memphis.fridge.client.views.LoginView;
-import memphis.fridge.client.views.ProductView;
-import memphis.fridge.client.views.PurchaseView;
-import memphis.fridge.client.widgets.FridgeWidget;
-import memphis.fridge.client.widgets.LoginWidget;
-import memphis.fridge.client.widgets.ProductTableWidget;
-import memphis.fridge.client.widgets.PurchaseWidget;
+import memphis.fridge.client.views.*;
+import memphis.fridge.client.widgets.*;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -35,6 +30,7 @@ import memphis.fridge.client.widgets.PurchaseWidget;
 public class ClientModule extends AbstractGinModule {
 	@Override
 	protected void configure() {
+		bind(AccountView.class).to(AccountWidget.class).asEagerSingleton();
 		bind(EventBus.class).to(SimpleEventBus.class).asEagerSingleton();
 		bind(LoginView.class).to(LoginWidget.class).asEagerSingleton();
 		bind(ProductView.class).to(ProductTableWidget.class).asEagerSingleton();
@@ -58,6 +54,13 @@ public class ClientModule extends AbstractGinModule {
 	@SuppressWarnings({"deprecation"})
 	PlaceController placeController(EventBus eb) {
 		return new PlaceController(eb);
+	}
+
+	@Provides
+	@Singleton
+	@Named("session-panel")
+	ActivityManager sessionManager(EventBus eb, SessionActivityMapper mapper) {
+		return new ActivityManager(mapper, eb);
 	}
 
 	@Provides

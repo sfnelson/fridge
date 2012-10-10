@@ -4,6 +4,7 @@
     <ui:style>
     </ui:style>
     <g:HTMLPanel>
+        <g:SimplePanel ui:field="account"></g:SimplePanel>
         <g:SimplePanel ui:field="products"></g:SimplePanel>
         <g:SimplePanel ui:field="user"></g:SimplePanel>
     </g:HTMLPanel>

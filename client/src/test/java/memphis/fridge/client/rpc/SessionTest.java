@@ -32,12 +32,12 @@ public class SessionTest {
 
 	@Test
 	public void testLogin() throws Exception {
-		Capture<RequestNonce.NonceResponseHandler> handler = new Capture<RequestNonce.NonceResponseHandler>();
+		Capture<RequestNonce.Handler> handler = new Capture<RequestNonce.Handler>();
 		Capture<Scheduler.ScheduledCommand> command = new Capture<Scheduler.ScheduledCommand>();
 		expect(session.crypt.md5(password)).andReturn(pwhash);
 		m.getMock(RequestNonce.class).requestNonce(eq(username), capture(handler));
 		m.getMock(Scheduler.class).scheduleDeferred(capture(command));
-		session.place.goTo(anyObject(PurchasePlace.class));
+		session.place.goTo(anyObject(SessionPlace.class));
 		m.replay();
 		session.login(username, password);
 		handler.getValue().onNonceReceived(snonce);

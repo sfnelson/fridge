@@ -1,17 +1,13 @@
 package memphis.fridge.client.rpc;
 
-import java.util.List;
-
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.place.shared.Place;
 import com.google.gwt.place.shared.PlaceController;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
-import memphis.fridge.client.utils.CryptUtils;
 import memphis.fridge.client.places.LoginPlace;
-import memphis.fridge.client.places.PurchasePlace;
+import memphis.fridge.client.utils.CryptUtils;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -24,7 +20,7 @@ public class Session {
 	private String nonce;
 
 	@Inject
-    CryptUtils crypt;
+	CryptUtils crypt;
 
 	@Inject
 	PlaceController place;
@@ -42,51 +38,11 @@ public class Session {
 		return username != null && password_md5 != null;
 	}
 
-	public void login(final String username, final String password) {
-		this.username = username;
-		this.password_md5 = crypt.md5(password);
-		requestNonce(new RequestNonce.NonceResponseHandler() {
-			public void onNonceReceived(String nonce) {
-				Session.this.nonce = nonce;
-				goTo(new PurchasePlace(username));
-			}
-
-			public void onError(Throwable exception) {
-				Session.this.username = null;
-				Session.this.password_md5 = null;
-				Session.this.nonce = null;
-				goTo(LoginPlace.LOGIN);
-			}
-		});
-	}
-
 	public void logout() {
 		this.username = null;
 		this.password_md5 = null;
 		this.nonce = null;
 		goTo(LoginPlace.LOGIN);
-	}
-
-	public void requestNonce(RequestNonce.NonceResponseHandler callback) {
-		if (nonce != null) {
-			String nonce = this.nonce;
-			this.nonce = null;
-			callback.onNonceReceived(nonce);
-		} else {
-			nonceRequest.get().requestNonce(username, callback);
-		}
-	}
-
-	public void placeOrder(final List<PurchaseEntry> content, final RequestPurchase.OrderResponseHandler callback) {
-		requestNonce(new RequestNonce.NonceResponseHandler() {
-			public void onNonceReceived(String nonce) {
-				purchaseRequest.get().requestOrder(nonce, username, content, callback);
-			}
-
-			public void onError(Throwable exception) {
-				callback.onError(exception);
-			}
-		});
 	}
 
 	String sign(Object... request) {

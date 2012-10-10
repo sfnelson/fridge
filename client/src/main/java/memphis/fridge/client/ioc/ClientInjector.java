@@ -7,7 +7,6 @@ import com.google.gwt.inject.client.Ginjector;
 import com.google.gwt.place.shared.PlaceHistoryHandler;
 
 import javax.inject.Named;
-
 import memphis.fridge.client.views.FridgeView;
 
 /**
@@ -21,6 +20,9 @@ public interface ClientInjector extends Ginjector {
 	PlaceHistoryHandler getHistoryHandler();
 
 	FridgeView getFridgeView();
+
+	@Named("session-panel")
+	ActivityManager getSessionPanel();
 
 	@Named("user-panel")
 	ActivityManager getUserPanel();

@@ -3,6 +3,7 @@ package memphis.fridge.client.activities;
 import com.google.gwt.activity.shared.Activity;
 import com.google.gwt.activity.shared.ActivityMapper;
 import com.google.gwt.place.shared.Place;
+import com.google.gwt.place.shared.PlaceController;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -10,21 +11,22 @@ import memphis.fridge.client.places.SessionPlace;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
- * Date: 7/10/12
+ * Date: 10/10/12
  */
-public class UserPanelActivityMapper implements ActivityMapper {
+public class SessionActivityMapper implements ActivityMapper {
 
 	@Inject
-	Provider<LoginActivity> login;
+	PlaceController pc;
 
 	@Inject
-	Provider<PurchaseActivity> purchase;
+	Provider<SessionActivity> session;
 
 	public Activity getActivity(Place place) {
 		if (place instanceof SessionPlace) {
-			return purchase.get().init((SessionPlace) place);
+			SessionPlace details = (SessionPlace) place;
+			return session.get().init(details);
 		}
 
-		return login.get();
+		return null;
 	}
 }

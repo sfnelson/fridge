@@ -13,17 +13,21 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import memphis.fridge.client.events.AccountEvent;
+import memphis.fridge.client.events.AccountHandler;
 import memphis.fridge.client.events.ProductEvent;
 import memphis.fridge.client.events.ProductHandler;
+import memphis.fridge.client.places.SessionPlace;
 import memphis.fridge.client.rpc.*;
-import memphis.fridge.client.utils.NumberUtils;
 import memphis.fridge.client.views.PurchaseView;
+
+import static memphis.fridge.client.utils.NumberUtils.printCurrency;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-public class PurchaseActivity extends AbstractActivity implements PurchaseView.Presenter, RequestProducts.ProductRequestHandler, ProductHandler {
+public class PurchaseActivity extends AbstractActivity implements PurchaseView.Presenter {
 
 	private static final Logger log = Logger.getLogger("purchase");
 
@@ -36,7 +40,13 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	@Inject
 	Provider<RequestProducts> productsRequest;
 
-	private String username;
+	@Inject
+	Provider<RequestNonce> nonce;
+
+	@Inject
+	Provider<RequestPurchase> purchase;
+
+	private SessionPlace details;
 
 	private Map<String, Product> products;
 	private Map<String, Integer> order = Maps.newHashMap();
@@ -44,19 +54,28 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	public PurchaseActivity() {
 	}
 
-	public PurchaseActivity init(String username) {
-		this.username = username;
+	public PurchaseActivity init(SessionPlace details) {
+		this.details = details;
 		return this;
 	}
 
 	public void start(AcceptsOneWidget panel, EventBus eventBus) {
-		if (!session.isLoggedIn()) session.logout();
 		view.setPresenter(this);
 		refreshProducts();
 		refreshView();
 		panel.setWidget(view);
 
-		ProductEvent.register(eventBus, this);
+		ProductEvent.register(eventBus, new ProductHandler() {
+			public void productSelected(Product p) {
+				addToOrder(p.getProductCode(), 1);
+				view.setProduct(p.getProductCode());
+			}
+		});
+		AccountEvent.register(eventBus, new AccountHandler() {
+			public void accountAvailable(Account a) {
+				view.setBalance(a.getBalance());
+			}
+		});
 	}
 
 	@Override
@@ -70,11 +89,6 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	@Override
 	public void onStop() {
 		view.setPresenter(null);
-	}
-
-	public void productSelected(Product p) {
-		addToOrder(p.getProductCode(), 1);
-		view.setProduct(p.getProductCode());
 	}
 
 	public void addToOrder(String code, int num) {
@@ -95,17 +109,17 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	}
 
 	public void submitOrder() {
-		List<PurchaseEntry> content = buildOrder();
+		final List<PurchaseEntry> content = buildOrder();
 		int total = 0;
 		for (PurchaseEntry e : content) {
 			total += e.getCost();
 		}
-		boolean confirm = Window.confirm("Your account will be charged " + NumberUtils.printCurrency(total).asString());
+		boolean confirm = Window.confirm("Your account will be charged " + printCurrency(total).asString());
 		if (confirm) {
-			session.placeOrder(content, new RequestPurchase.OrderResponseHandler() {
+			final RequestPurchase.OrderResponseHandler callback = new RequestPurchase.OrderResponseHandler() {
 				public void onOrderProcessed(int balance, int orderTotal) {
-					Window.alert("Success! Your balance is now " + NumberUtils.printCurrency(balance).asString());
-
+					order.clear();
+					Window.alert("Success! Your balance is now " + printCurrency(balance).asString());
 					session.logout();
 				}
 
@@ -114,6 +128,16 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 					// TODO better error handling
 					Window.alert("failed to place order!");
 				}
+			};
+
+			nonce.get().requestNonce(details, new RequestNonce.Handler() {
+				public void onNonceReceived(String snonce) {
+					purchase.get().requestOrder(snonce, details.getUsername(), content, callback);
+				}
+
+				public void onError(Throwable exception) {
+					callback.onError(exception);
+				}
 			});
 		}
 	}
@@ -121,6 +145,13 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	private void refreshView() {
 		List<PurchaseEntry> content = buildOrder();
 		view.setCartContents(content);
+		if (content != null) {
+			int cost = 0;
+			for (PurchaseEntry e : content) {
+				cost += e.getCost();
+			}
+			view.setOrderDetails(cost);
+		}
 	}
 
 	private List<PurchaseEntry> buildOrder() {
@@ -137,21 +168,21 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 
 	private void refreshProducts() {
 		products = null;
-		productsRequest.get().requestProducts(username, this);
-	}
-
-	public void productsReady(List<? extends Product> products) {
-		this.products = Maps.newHashMap();
-		for (Product p : products) {
-			this.products.put(p.getProductCode().toUpperCase(), p);
-		}
-		List<String> toRemove = Lists.newArrayList();
-		for (String code : order.keySet()) {
-			if (!this.products.containsKey(code)) toRemove.add(code);
-		}
-		for (String code : toRemove) {
-			order.remove(code);
-		}
-		refreshView();
+		productsRequest.get().requestProducts(details.getUsername(), new RequestProducts.Handler() {
+			public void productsReady(List<? extends Product> incoming) {
+				products = Maps.newHashMap();
+				for (Product p : incoming) {
+					products.put(p.getProductCode().toUpperCase(), p);
+				}
+				List<String> toRemove = Lists.newArrayList();
+				for (String code : order.keySet()) {
+					if (!products.containsKey(code)) toRemove.add(code);
+				}
+				for (String code : toRemove) {
+					order.remove(code);
+				}
+				refreshView();
+			}
+		});
 	}
 }

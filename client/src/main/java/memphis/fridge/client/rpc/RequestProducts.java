@@ -22,14 +22,14 @@ public class RequestProducts {
 
 	private static final Logger log = Logger.getLogger("products");
 
-	public interface ProductRequestHandler {
+	public interface Handler {
 		void productsReady(List<? extends Product> products);
 	}
 
 	@Inject
 	Session session;
 
-	public void requestProducts(String username, ProductRequestHandler handler) {
+	public void requestProducts(String username, Handler handler) {
 		SafeUri uri = createRequest(username);
 		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, uri.asString());
 		builder.setCallback(new Callback(handler));
@@ -42,9 +42,9 @@ public class RequestProducts {
 	}
 
 	private static class Callback implements RequestCallback {
-		private final ProductRequestHandler handler;
+		private final Handler handler;
 
-		public Callback(ProductRequestHandler handler) {
+		public Callback(Handler handler) {
 			this.handler = handler;
 		}
 

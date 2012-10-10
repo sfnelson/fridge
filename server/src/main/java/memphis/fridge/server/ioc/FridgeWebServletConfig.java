@@ -7,10 +7,7 @@ import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-import memphis.fridge.server.GenerateNonceRequest;
-import memphis.fridge.server.GetProductsRequest;
-import memphis.fridge.server.OrderRequest;
-import memphis.fridge.server.ProductImages;
+import memphis.fridge.server.*;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -24,6 +21,7 @@ public class FridgeWebServletConfig extends GuiceServletContextListener {
 			protected void configureServlets() {
 				install(new JpaPersistModule("FridgeDB"));
 
+				bind(AccountRequest.class);
 				bind(GenerateNonceRequest.class);
 				bind(GetProductsRequest.class);
 				bind(OrderRequest.class);

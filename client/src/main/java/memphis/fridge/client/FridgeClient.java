@@ -4,8 +4,8 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.RootPanel;
 
-import memphis.fridge.client.views.FridgeView;
 import memphis.fridge.client.ioc.ClientInjector;
+import memphis.fridge.client.views.FridgeView;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -17,6 +17,7 @@ public class FridgeClient implements EntryPoint {
 
 	public void onModuleLoad() {
 		FridgeView fridge = injector.getFridgeView();
+		injector.getSessionPanel().setDisplay(fridge.getAccountPanel());
 		injector.getUserPanel().setDisplay(fridge.getUserPanel());
 		injector.getProductPanel().setDisplay(fridge.getProductsPanel());
 		RootPanel.get().add(fridge);

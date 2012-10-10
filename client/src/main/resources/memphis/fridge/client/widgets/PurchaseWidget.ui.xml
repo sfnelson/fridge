@@ -41,6 +41,10 @@
             margin: 1em auto;
             width: 20em;
         }
+
+        .balance, .total {
+            text-align: right;
+        }
     </ui:style>
     <g:RenderablePanel styleName="{style.purchase}">
         <table>
@@ -59,12 +63,22 @@
                 </td>
             </tr>
         </table>
-        <div class="{style.info}">
-            <g:Label ui:field="name"></g:Label>
-            <g:Label ui:field="type"></g:Label>
-            <g:Label ui:field="balance"></g:Label>
-            <g:Label ui:field="total"></g:Label>
-        </div>
         <c:CellList ui:field="cart" styleName="{style.cart}"></c:CellList>
+        <table class="{style.info}">
+            <tr>
+                <td>
+                    <g:TextBox ui:field="balance" styleName="{style.balance}" enabled="false"></g:TextBox>
+                    <label>balance</label>
+                </td>
+                <td>
+                    <g:TextBox ui:field="total" styleName="{style.total}" enabled="false"></g:TextBox>
+                    <label>order total</label>
+                </td>
+                <td>
+                    <g:Button ui:field="buy">Buy</g:Button>
+                    <label>&nbsp;</label>
+                </td>
+            </tr>
+        </table>
     </g:RenderablePanel>
 </ui:UiBinder>

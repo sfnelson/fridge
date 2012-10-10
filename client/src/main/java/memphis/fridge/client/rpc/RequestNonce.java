@@ -9,7 +9,7 @@ import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
 
 import javax.inject.Inject;
-
+import memphis.fridge.client.places.SessionPlace;
 import memphis.fridge.client.utils.CryptUtils;
 
 /**
@@ -20,26 +20,23 @@ public class RequestNonce {
 
 	private static final Logger log = Logger.getLogger("RequestNonce");
 
-	public static interface NonceResponseHandler {
+	public static interface Handler {
 		public void onNonceReceived(String snonce);
 
 		public void onError(Throwable exception);
 	}
 
 	@Inject
-    CryptUtils crypt;
+	CryptUtils crypt;
 
-	@Inject
-	Session session;
-
-	public void requestNonce(String username, NonceResponseHandler request) {
+	public void requestNonce(SessionPlace details, Handler request) {
 		final String cnonce = crypt.generateNonceToken();
 		final int timestamp = (int) (System.currentTimeMillis() / 1000);
-		final String hmac = session.sign(cnonce, timestamp, username);
+		final String hmac = crypt.sign(details.getSecret(), cnonce, timestamp, details.getUsername());
 
-		SafeUri uri = createRequest(cnonce, timestamp, username, hmac);
+		SafeUri uri = createRequest(cnonce, timestamp, details.getUsername(), hmac);
 		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, uri.asString());
-		builder.setCallback(new Callback(session, cnonce, request));
+		builder.setCallback(new Callback(details, cnonce, request));
 		try {
 			builder.send();
 		} catch (RequestException ex) {
@@ -57,13 +54,13 @@ public class RequestNonce {
 		);
 	}
 
-	private static class Callback implements RequestCallback {
+	private class Callback implements RequestCallback {
+		private final SessionPlace details;
 		private final String cnonce;
-		private final Session session;
-		private final NonceResponseHandler handler;
+		private final Handler handler;
 
-		public Callback(Session session, String cnonce, NonceResponseHandler handler) {
-			this.session = session;
+		public Callback(SessionPlace details, String cnonce, Handler handler) {
+			this.details = details;
 			this.cnonce = cnonce;
 			this.handler = handler;
 		}
@@ -73,7 +70,7 @@ public class RequestNonce {
 				log.info("response: " + response.getStatusCode() + " " + response.getStatusText());
 				try {
 					Nonce n = JsonUtils.safeEval(response.getText());
-					if (session.verify(n.getHMAC(), n.getServerNonce(), cnonce)) {
+					if (crypt.verify(details.getSecret(), n.getHMAC(), n.getServerNonce(), cnonce)) {
 						handler.onNonceReceived(n.getServerNonce());
 					} else {
 						handler.onError(new RuntimeException("nonce failed verification"));

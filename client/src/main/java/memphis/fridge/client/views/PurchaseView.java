@@ -16,7 +16,13 @@ public interface PurchaseView extends IsWidget {
 
 	void setProduct(String productCode);
 
-	public void setCartContents(List<PurchaseEntry> content);
+	void setCartContents(List<PurchaseEntry> content);
+
+	void setOrderDetails(int cost);
+
+	void setBalance(int balance);
+
+	void clearOrder();
 
 	interface Presenter {
 		void addToOrder(String code, int num);

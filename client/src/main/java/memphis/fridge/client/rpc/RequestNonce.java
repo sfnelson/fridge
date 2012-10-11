@@ -2,9 +2,9 @@ package memphis.fridge.client.rpc;
 
 import java.util.logging.Logger;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.http.client.*;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
 
@@ -16,7 +16,7 @@ import memphis.fridge.client.utils.CryptUtils;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 30/09/12
  */
-public class RequestNonce {
+public class RequestNonce extends FridgeRequest {
 
 	private static final Logger log = Logger.getLogger("RequestNonce");
 
@@ -29,77 +29,41 @@ public class RequestNonce {
 	@Inject
 	CryptUtils crypt;
 
-	public void requestNonce(SessionPlace details, Handler request) {
-		final String cnonce = crypt.generateNonceToken();
+	public void requestNonce(SessionPlace details, Handler callback) {
+		final String nonce = crypt.generateNonceToken();
 		final int timestamp = (int) (System.currentTimeMillis() / 1000);
-		final String hmac = crypt.sign(details.getSecret(), cnonce, timestamp, details.getUsername());
 
-		SafeUri uri = createRequest(cnonce, timestamp, details.getUsername(), hmac);
-		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, uri.asString());
-		builder.setCallback(new Callback(details, cnonce, request));
+		RequestBuilder request = initRequest(url(), RequestBuilder.GET, details, nonce, String.valueOf(timestamp));
+		request.setHeader("fridge-timestamp", String.valueOf(timestamp));
+		request.setCallback(new Callback(details, nonce, callback));
 		try {
-			builder.send();
+			request.send();
 		} catch (RequestException ex) {
 			log.warning("error sending request: " + ex.getMessage());
+			callback.onError(ex);
 		}
 	}
 
-	static SafeUri createRequest(String cnonce, int timestamp, String username, String hmac) {
+	private class Callback extends FridgeRequest.Callback<Handler> {
+		private Callback(SessionPlace details, String nonce, Handler handler) {
+			super(details, nonce, handler, 204);
+		}
+
+		@Override
+		protected void doCallbackSuccess(Handler handler, String message, Response response) {
+			handler.onNonceReceived(response.getHeader("fridge-nonce-new"));
+		}
+
+		@Override
+		protected void doCallbackFailure(Handler handler, Throwable ex) {
+			log.info("nonce response failed: " + ex.getMessage());
+			handler.onError(ex);
+		}
+	}
+
+	static SafeUri url() {
 		return UriUtils.fromSafeConstant(
-				"/memphis/fridge/rest/generate_nonce/json"
-						+ "?cnonce=" + UriUtils.encode(cnonce)
-						+ "&timestamp=" + UriUtils.encode(String.valueOf(timestamp))
-						+ "&username=" + UriUtils.encode(username)
-						+ "&hmac=" + UriUtils.encode(hmac)
+				"/memphis/fridge/rest/nonce/generate/json"
 		);
-	}
-
-	private class Callback implements RequestCallback {
-		private final SessionPlace details;
-		private final String cnonce;
-		private final Handler handler;
-
-		public Callback(SessionPlace details, String cnonce, Handler handler) {
-			this.details = details;
-			this.cnonce = cnonce;
-			this.handler = handler;
-		}
-
-		public void onResponseReceived(Request request, Response response) {
-			if (response.getStatusCode() == 200) {
-				log.info("response: " + response.getStatusCode() + " " + response.getStatusText());
-				try {
-					Nonce n = JsonUtils.safeEval(response.getText());
-					if (crypt.verify(details.getSecret(), n.getHMAC(), n.getServerNonce(), cnonce)) {
-						handler.onNonceReceived(n.getServerNonce());
-					} else {
-						handler.onError(new RuntimeException("nonce failed verification"));
-					}
-				} catch (IllegalArgumentException ex) {
-					log.warning("parsing nonce response failed.\n" + ex.getMessage());
-					handler.onError(ex);
-				}
-			} else {
-				log.info("unexpected response status: " + response.getStatusCode() + " " + response.getStatusText());
-			}
-		}
-
-		public void onError(Request request, Throwable exception) {
-			handler.onError(exception);
-		}
-	}
-
-	private static class Nonce extends JavaScriptObject {
-
-		protected Nonce() {
-		}
-
-		public native final String getServerNonce() /*-{
-			return this.nonce;
-		}-*/;
-
-		public native final String getHMAC() /*-{
-			return this.hmac;
-		}-*/;
 	}
 }

@@ -41,6 +41,9 @@ public class CryptUtils {
 		serialize(sb, toSign);
 		String message = sb.toString();
 
+		log.info("signing message with " + password + ":");
+		log.info(message);
+
 		try {
 			SecretKeySpec key = new SecretKeySpec(password.getBytes("CP1252"), "HmacMD5");
 			Mac mac = Mac.getInstance("HmacMD5");

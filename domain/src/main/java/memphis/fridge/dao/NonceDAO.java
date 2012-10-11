@@ -70,7 +70,7 @@ public class NonceDAO {
 
 	private void expireOldNonces() {
 		Query q = em.get().createNativeQuery(
-				"DELETE FROM nonces WHERE created_at > now() - interval '10 minutes'");
+				"DELETE FROM nonces WHERE created_at < now() - interval '10 minutes';");
 		q.executeUpdate();
 	}
 }

@@ -6,13 +6,17 @@ import javax.inject.Inject;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.*;
+import memphis.fridge.protocol.Messages;
+import memphis.fridge.server.ioc.AuthModule;
 import memphis.fridge.server.ioc.MockInjectingRunner;
 import memphis.fridge.server.ioc.MockInjectingRunner.Mock;
 import memphis.fridge.server.ioc.MockInjectingRunner.MockManager;
+import memphis.fridge.server.ioc.SessionState;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static memphis.fridge.server.TestingData.*;
 import static memphis.fridge.utils.CurrencyUtils.fromCents;
@@ -26,6 +30,7 @@ import static org.easymock.EasyMock.expectLastCall;
  */
 @RunWith(MockInjectingRunner.class)
 @MockInjectingRunner.ToInject({Purchase.class})
+@MockInjectingRunner.WithModules({AuthModule.class})
 public class PurchaseTest {
 
 	private static final Object[] HMAC_ARGS = {
@@ -40,35 +45,27 @@ public class PurchaseTest {
 	User user;
 
 	@Inject
-	@Mock
-	ResponseSerializer.ObjectSerializer response;
+	MockManager mocks;
 
 	@Inject
-	MockManager mocks;
+	@MockInjectingRunner.Mock
+	SessionState s;
 
 	@Before
 	public void setUp() {
 		mocks.reset();
 	}
 
-	@Test(expected = FridgeException.class)
-	public void testPurchaseBadHMAC() throws Exception {
-		p.users.validateHMAC(USERNAME, HMAC, HMAC_ARGS);
-		expectLastCall().andThrow(new FridgeException("invalid hmac"));
-		test();
-	}
-
-	@Test(expected = InvalidUserException.class)
-	public void testPurchaseErrorGettingUser() throws Exception {
-		p.users.validateHMAC(USERNAME, HMAC, HMAC_ARGS);
-		expect(p.users.retrieveUser(USERNAME)).andThrow(new InvalidUserException(USERNAME));
+	@Test(expected = AuthenticationException.class)
+	public void testPurchaseNotAuthenticated() throws Exception {
+		expect(s.isAuthenticated()).andReturn(false);
 		test();
 	}
 
 	@Test(expected = FridgeException.class)
 	public void testPurchaseErrorGettingDiscount() throws Exception {
-		p.users.validateHMAC(USERNAME, HMAC, HMAC_ARGS);
-		expect(p.users.retrieveUser(USERNAME)).andReturn(user);
+		expect(s.isAuthenticated()).andReturn(true);
+		expect(s.getUser()).andReturn(user);
 		expect(user.isGrad()).andReturn(false);
 		expect(p.fridge.getGraduateDiscount()).andThrow(new FridgeException("Database error"));
 		test();
@@ -133,7 +130,11 @@ public class PurchaseTest {
 		expectProductUpdates(true);
 		expectUserUpdates(cost);
 		expectResponse(cost, balance);
-		test();
+
+		Messages.TransactionResponse response = test();
+
+		assertEquals(toCents(balance), response.getBalance());
+		assertEquals(toCents(cost), response.getCost());
 	}
 
 	@Test
@@ -144,28 +145,34 @@ public class PurchaseTest {
 		expectProductUpdates(false);
 		expectUserUpdates(cost);
 		expectResponse(cost, balance);
-		test();
+
+		Messages.TransactionResponse response = test();
+
+		assertEquals(toCents(balance), response.getBalance());
+		assertEquals(toCents(cost), response.getCost());
 	}
 
 	/* Helper methods */
 
-	private void test() {
+	private Messages.TransactionResponse test() {
+		Messages.TransactionResponse r;
 		mocks.replay();
 
 		try {
-			HMACResponse r = p.purchase(SNONCE, USERNAME, order(), HMAC);
+			r = p.purchase(order());
 			assertNotNull(r);
-			r.visit(response);
 		} catch (FridgeException ex) {
 			mocks.verify();
 			throw ex;
 		}
 		mocks.verify();
+
+		return r;
 	}
 
 	private void expectUserInit(boolean isGrad) {
-		p.users.validateHMAC(USERNAME, HMAC, HMAC_ARGS);
-		expect(p.users.retrieveUser(USERNAME)).andReturn(user);
+		expect(s.isAuthenticated()).andReturn(true);
+		expect(s.getUser()).andReturn(user);
 		expect(user.isGrad()).andReturn(isGrad);
 		if (!isGrad) {
 			expect(p.fridge.getGraduateDiscount()).andReturn(GRAD_TAX);
@@ -193,10 +200,7 @@ public class PurchaseTest {
 
 	private void expectResponse(BigDecimal cost, BigDecimal balance) {
 		expect(p.users.retrieveUser(USERNAME)).andReturn(user);
+		expect(user.getUsername()).andReturn(USERNAME);
 		expect(user.getBalance()).andReturn(BigDecimal.TEN);
-		expect(p.users.createHMAC(USERNAME, SNONCE, toCents(balance), toCents(cost))).andReturn(HMAC);
-		response.visitInteger("balance", toCents(balance));
-		response.visitInteger("order_total", toCents(cost));
-		response.visitString("hmac", HMAC);
 	}
 }

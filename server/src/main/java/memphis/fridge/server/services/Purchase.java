@@ -1,18 +1,17 @@
 package memphis.fridge.server.services;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import com.google.inject.persist.Transactional;
 import javax.inject.Inject;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import memphis.fridge.dao.*;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.InsufficientStockException;
 import memphis.fridge.exceptions.InvalidProductException;
-import memphis.fridge.utils.Pair;
+import memphis.fridge.protocol.Messages;
+import memphis.fridge.server.ioc.RequireAuthenticated;
+import memphis.fridge.server.ioc.SessionState;
 
 import static memphis.fridge.utils.CurrencyUtils.*;
 
@@ -21,6 +20,9 @@ import static memphis.fridge.utils.CurrencyUtils.*;
  * Date: 30/09/12
  */
 public class Purchase {
+
+	@Inject
+	SessionState session;
 
 	@Inject
 	UserDAO users;
@@ -38,10 +40,9 @@ public class Purchase {
 	CreditLogDAO creditLog;
 
 	@Transactional
-	public HMACResponse purchase(String snonce, String username, List<Pair<String, Integer>> items, String hmac) {
-		users.validateHMAC(username, hmac, snonce, username, items);
-
-		User user = users.retrieveUser(username);
+	@RequireAuthenticated
+	public Messages.TransactionResponse purchase(Messages.PurchaseRequest request) {
+		User user = session.getUser();
 
 		/**
 		 * This is counter-intuitive, but the graduate discount is actually a markup on undergrads.
@@ -57,10 +58,10 @@ public class Purchase {
 		 *  * create a purchase record
 		 *  * add cost to cumulative total
 		 */
-		for (Pair<String, Integer> item : items) {
-			Product product = products.findProduct(item.getKey());
-			int count = item.getValue();
-			if (product == null) throw new InvalidProductException(item.getKey());
+		for (Messages.PurchaseRequest.Order item : request.getOrdersList()) {
+			Product product = products.findProduct(item.getCode());
+			int count = item.getQuantity();
+			if (product == null) throw new InvalidProductException(item.getCode());
 			if (product.getInStock() < count) throw new InsufficientStockException();
 			products.consumeProduct(product, count);
 
@@ -69,7 +70,7 @@ public class Purchase {
 
 			purchases.createPurchase(user, product, count, cost, surplus);
 
-			totalCost = add(totalCost, cost, surplus);
+			totalCost = sum(totalCost, cost, surplus);
 		}
 
 		/**
@@ -81,41 +82,18 @@ public class Purchase {
 		/* Create a transaction record for this purchase */
 		creditLog.createPurchase(user, totalCost);
 
-		return new PurchaseResponse(users, username, snonce,
-				toCents(users.retrieveUser(username).getBalance()),
-				toCents(totalCost));
+		user = users.retrieveUser(user.getUsername());
+
+		return Messages.TransactionResponse.newBuilder()
+				.setBalance(toCents(user.getBalance()))
+				.setCost(toCents(totalCost)).build();
 	}
 
-	private static BigDecimal add(BigDecimal... toAdd) {
+	private static BigDecimal sum(BigDecimal... toAdd) {
 		BigDecimal sum = BigDecimal.ZERO;
 		for (BigDecimal v : toAdd) {
 			sum = sum.add(v);
 		}
 		return sum;
-	}
-
-	@XmlRootElement(name = "methodResponse")
-	private static class PurchaseResponse extends HMACResponse {
-
-		@XmlElement(name = "balance")
-		int balance;
-
-		@XmlElement(name = "order_total")
-		int order_total;
-
-		PurchaseResponse() {
-		}
-
-		PurchaseResponse(UserDAO users, String username, String snonce, int balance, int order_total) {
-			super(users, username, snonce, balance, order_total);
-			this.balance = balance;
-			this.order_total = order_total;
-		}
-
-		@Override
-		protected void visitParams(ResponseSerializer.ObjectSerializer visitor) {
-			visitor.visitInteger("balance", balance);
-			visitor.visitInteger("order_total", order_total);
-		}
 	}
 }

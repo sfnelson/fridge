@@ -10,6 +10,7 @@ import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.googlecode.protobuf.format.JsonFormat;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -23,6 +24,7 @@ import memphis.fridge.server.ioc.SessionState;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 11/10/12
  */
+@Singleton
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
 public class SignedJsonMessageWriter<T> implements MessageBodyWriter<T> {

@@ -7,6 +7,7 @@ import memphis.fridge.dao.ProductsDAO;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.ProductCategory;
+import memphis.fridge.server.ioc.RequireAdmin;
 import memphis.fridge.utils.CurrencyUtils;
 
 public class Products {
@@ -21,10 +22,9 @@ public class Products {
 	ProductCategoryDAO categoryDAO;
 
 	@Transactional
-	public Response addProduct(String snonce, String user, String code, String description, int categoryId, int initialStock,
-							   int minimumStock, int cost, int markup, String hmac) {
-		userDAO.validateHMAC(user, hmac, snonce, code, description, categoryId, initialStock, minimumStock, cost, markup);
-		userDAO.checkAdmin(user);
+	@RequireAdmin
+	public void addProduct(String code, String description, int categoryId, int initialStock, int minimumStock,
+						   int cost, int markup) {
 
 		productsDAO.checkProductNotExists(code);
 
@@ -40,18 +40,12 @@ public class Products {
 				category);
 
 		productsDAO.add(product);
-
-		return new Response() {
-			public void visit(ResponseSerializer visitor) {
-			}
-		};
 	}
 
 	@Transactional
-	public Response updateProduct(String snonce, String user, String code, String description, int categoryId, int minimumStock, int cost, int markup,
-								  boolean enabled, String hmac) {
-		userDAO.validateHMAC(user, hmac, snonce, code, description, categoryId, minimumStock, cost, markup, enabled);
-		userDAO.checkAdmin(user);
+	@RequireAdmin
+	public void updateProduct(String code, String description, int categoryId, int minimumStock, int cost, int markup,
+							  boolean enabled) {
 
 		Product product = productsDAO.findProduct(code);
 		product.setDescription(description);
@@ -66,24 +60,13 @@ public class Products {
 		}
 
 		productsDAO.save(product);
-
-		return new Response() {
-			public void visit(ResponseSerializer visitor) {
-			}
-		};
 	}
 
 	@Transactional
-	public Response storeProductImage(String code, byte[] image) {
-		// TODO validate user and hmac as admin
-
+	@RequireAdmin
+	public void storeProductImage(String code, byte[] image) {
 		Product product = productsDAO.findProduct(code);
 		productsDAO.storeImage(product, image);
-
-		return new Response() {
-			public void visit(ResponseSerializer visitor) {
-			}
-		};
 	}
 
 	public byte[] getProductImage(String code) {

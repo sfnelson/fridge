@@ -5,19 +5,21 @@ import java.util.logging.Logger;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.http.client.*;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
 
-import com.google.common.collect.Lists;
 import javax.inject.Inject;
+import memphis.fridge.client.places.SessionPlace;
 import memphis.fridge.client.utils.CryptUtils;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 8/10/12
  */
-public class RequestPurchase {
+public class RequestPurchase extends FridgeRequest {
 	private static final Logger log = Logger.getLogger("RequestNonce");
 
 	public static interface OrderResponseHandler {
@@ -32,27 +34,17 @@ public class RequestPurchase {
 	@Inject
 	Session session;
 
-	public void requestOrder(String snonce, String username, List<PurchaseEntry> cart, OrderResponseHandler request) {
-		List<Object> hmacParams = Lists.<Object>newArrayList(snonce, username);
-		for (PurchaseEntry p : cart) {
-			hmacParams.add(p.getProductCode());
-			hmacParams.add(p.getNumber());
-		}
-		String hmac = session.sign(hmacParams.toArray());
-
-		SafeUri uri = createRequest();
+	public void requestOrder(String nonce, SessionPlace details, List<PurchaseEntry> cart, OrderResponseHandler request) {
 		OrderRequest params = OrderRequest.createRequest();
-		params.setNonce(snonce);
-		params.setUsername(username);
 		for (PurchaseEntry p : cart) {
 			params.addItem(p.getProductCode(), p.getNumber());
 		}
-		params.setHmac(hmac);
+		String message = params.serialize();
 
-		RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, uri.asString());
+		RequestBuilder builder = initRequest(url(), RequestBuilder.POST, details, nonce, message);
 		builder.setHeader("Content-Type", "application/json");
-		builder.setRequestData(params.serialize());
-		builder.setCallback(new Callback(session, snonce, request));
+		builder.setRequestData(message);
+		builder.setCallback(new Callback(details, nonce, request));
 		try {
 			builder.send();
 		} catch (RequestException ex) {
@@ -60,44 +52,20 @@ public class RequestPurchase {
 		}
 	}
 
-	static SafeUri createRequest() {
-		return UriUtils.fromSafeConstant(
-                "/memphis/fridge/rest/purchase/json"
-		);
-	}
-
-	private static class Callback implements RequestCallback {
-		private final Session session;
-		private final String nonce;
-		private final OrderResponseHandler handler;
-
-		public Callback(Session session, String nonce, OrderResponseHandler handler) {
-			this.session = session;
-			this.nonce = nonce;
-			this.handler = handler;
+	private class Callback extends FridgeRequest.Callback<OrderResponseHandler> {
+		private Callback(SessionPlace details, String nonce, OrderResponseHandler handler) {
+			super(details, nonce, handler, 200);
 		}
 
-		public void onResponseReceived(Request request, Response response) {
-			if (response.getStatusCode() == 200) {
-				log.info("response: " + response.getStatusCode() + " " + response.getStatusText());
-				try {
-					OrderResponse r = JsonUtils.safeEval(response.getText());
-					if (session.verify(r.getHMAC(), nonce, r.getBalance(), r.getOrderTotal())) {
-						handler.onOrderProcessed(r.getBalance(), r.getOrderTotal());
-					} else {
-						handler.onError(new RuntimeException("nonce failed verification"));
-					}
-				} catch (IllegalArgumentException ex) {
-					log.warning("parsing nonce response failed.\n" + ex.getMessage());
-					handler.onError(ex);
-				}
-			} else {
-				log.info("unexpected response status: " + response.getStatusCode() + " " + response.getStatusText());
-			}
+		@Override
+		protected void doCallbackSuccess(OrderResponseHandler handler, String message, Response response) {
+			OrderResponse r = JsonUtils.safeEval(message);
+			handler.onOrderProcessed(r.getBalance(), r.getOrderTotal());
 		}
 
-		public void onError(Request request, Throwable exception) {
-			handler.onError(exception);
+		@Override
+		protected void doCallbackFailure(OrderResponseHandler handler, Throwable ex) {
+			handler.onError(ex);
 		}
 	}
 
@@ -148,5 +116,11 @@ public class RequestPurchase {
 		public native final String getHMAC() /*-{
 			return this.hmac;
 		}-*/;
+	}
+
+	static SafeUri url() {
+		return UriUtils.fromSafeConstant(
+				"/memphis/fridge/rest/purchase/json"
+		);
 	}
 }

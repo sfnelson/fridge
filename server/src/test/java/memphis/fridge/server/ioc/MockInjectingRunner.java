@@ -5,11 +5,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Provider;
+import com.google.inject.*;
 import org.easymock.EasyMock;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
@@ -29,6 +27,13 @@ public class MockInjectingRunner extends BlockJUnit4ClassRunner {
 		Class<?>[] value();
 	}
 
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Inherited
+	public @interface WithModules {
+		Class<? extends Module>[] value();
+	}
+
 	@Target(ElementType.FIELD)
 	@Retention(RetentionPolicy.RUNTIME)
 	@Inherited
@@ -45,15 +50,27 @@ public class MockInjectingRunner extends BlockJUnit4ClassRunner {
 		<T> T getMock(Class<T> type);
 	}
 
-	public MockInjectingRunner(Class<?> klass) throws InitializationError {
+	private Module[] modules;
+
+	public MockInjectingRunner(Class<?> klass) throws InitializationError, IllegalAccessException, InstantiationException {
 		super(klass);
+
+		if (klass.isAnnotationPresent(WithModules.class)) {
+			Class<? extends Module>[] args = klass.getAnnotation(WithModules.class).value();
+			modules = new Module[args.length];
+			for (int i = 0; i < args.length; i++) {
+				modules[i] = args[i].newInstance();
+			}
+		} else {
+			modules = new Module[0];
+		}
 	}
 
 	@Override
 	protected Object createTest() throws Exception {
 		Class<?> toTest = getTestClass().getJavaClass();
 		MockModule mocker = new MockModule(toTest, toTest.getAnnotation(ToInject.class).value());
-		Injector injector = Guice.createInjector(mocker);
+		Injector injector = Guice.createInjector(Lists.asList(mocker, modules));
 		return injector.getInstance(toTest);
 	}
 

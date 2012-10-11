@@ -51,6 +51,11 @@ public class SessionActivity extends AbstractActivity implements AccountView.Pre
 	}
 
 	public void start(AcceptsOneWidget panel, final EventBus eventBus) {
+		if (details.getSecret() == null) {
+			logout();
+			return;
+		}
+
 		view.setPresenter(this);
 		view.setUsername(details.getUsername());
 		panel.setWidget(view);
@@ -72,7 +77,7 @@ public class SessionActivity extends AbstractActivity implements AccountView.Pre
 			}
 
 			public void onError(Throwable exception) {
-				log.warning("login verification failed");
+				log.warning("login verification failed: " + exception.getMessage());
 				later.scheduleDeferred(new Scheduler.ScheduledCommand() {
 					public void execute() {
 						pc.goTo(new LoginPlace(details.getUsername()));

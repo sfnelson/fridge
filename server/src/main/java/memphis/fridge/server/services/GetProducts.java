@@ -12,6 +12,7 @@ import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.FridgeException;
+import memphis.fridge.protocol.Messages;
 
 import static memphis.fridge.utils.CurrencyUtils.markup;
 import static memphis.fridge.utils.CurrencyUtils.toCents;
@@ -34,7 +35,7 @@ public class GetProducts {
 	@Inject
 	FridgeDAO fridge;
 
-	public ListResponse<?> getProducts(@Nullable String username) {
+	public Messages.StockResponse getProducts(@Nullable String username) {
 		List<Product> products = this.products.getEnabledProducts();
 
 		BigDecimal tax = fridge.getGraduateDiscount();
@@ -48,46 +49,17 @@ public class GetProducts {
 			}
 		}
 
-		ProductsResponse response = new ProductsResponse();
+		Messages.StockResponse.Builder response = Messages.StockResponse.newBuilder();
 		for (Product p : products) {
 			int price = toCents(p.getCost().add(markup(p.getCost(), tax.add(p.getMarkup()))));
-			response.add(new ProductResponse(p, price));
+			response.addStockBuilder()
+					.setProductCode(p.getProductCode())
+					.setDescription(p.getDescription())
+					.setInStock(p.getInStock())
+					.setPrice(price)
+					.setCategory(p.getCategory().getTitle())
+					.setCategoryOrder(p.getCategory().getDisplaySequence());
 		}
-		return response;
+		return response.build();
 	}
-
-	private static class ProductsResponse extends ListResponse<ProductResponse> {
-		public void add(ProductResponse item) {
-			super.add(item);
-		}
-	}
-
-	private static class ProductResponse extends ObjectResponse {
-		String product_code;
-		String description;
-		int in_stock;
-		int price;
-		String category;
-		int category_order;
-
-		ProductResponse(Product p, int price) {
-			this.product_code = p.getProductCode();
-			this.description = p.getDescription();
-			this.in_stock = p.getInStock();
-			this.price = price;
-			this.category = p.getCategory().getTitle();
-			this.category_order = p.getCategory().getDisplaySequence();
-		}
-
-		@Override
-		public void visit(ResponseSerializer.ObjectSerializer visitor) {
-			visitor.visitString("product_code", product_code);
-			visitor.visitString("description", description);
-			visitor.visitInteger("in_stock", in_stock);
-			visitor.visitInteger("price", price);
-			visitor.visitString("category", category);
-			visitor.visitInteger("category_order", category_order);
-		}
-	}
-
 }

@@ -1,38 +1,40 @@
 package memphis.fridge.server;
 
+import java.util.Map;
+
 import com.google.inject.servlet.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.xml.ws.Response;
-import memphis.fridge.protocol.Messages;
+import javax.ws.rs.core.*;
+import memphis.fridge.server.ioc.SessionState;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 28/09/12
  */
-@Path("generate_nonce")
+@Path("nonce")
 @RequestScoped
 public class GenerateNonce {
 
 	@Inject
-	memphis.fridge.server.services.GenerateNonce service;
+	Provider<SessionState> session;
 
 	@GET
-	@Path("json")
+	@Path("generate/json")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response requestNonceJSON(Messages.NonceRequest request) {
-		service.
-		return service.generateNonce(clientNonce, timestamp, username, requestHMAC);
-	}
+	public Response requestNonceJSON(@Context HttpHeaders headers) {
+		MultivaluedMap<String, String> headersMap = headers.getRequestHeaders();
 
-	@GET
-	@Path("xml")
-	@Produces(MediaType.APPLICATION_XML)
-	public HMACResponse requestNonceXML() {
-		return service.generateNonce(clientNonce, timestamp, username, requestHMAC);
+		session.get().nonceRequest(headersMap);
+
+		Response.ResponseBuilder builder = Response.noContent();
+		Map<String, String> responseHeaders = session.get().sign("");
+		for (Map.Entry<String, String> e : responseHeaders.entrySet()) {
+			builder.header(e.getKey(), e.getValue());
+		}
+		return builder.build();
 	}
 }

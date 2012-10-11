@@ -2,10 +2,13 @@ package memphis.fridge.server.services;
 
 import java.math.BigDecimal;
 
+import com.google.inject.persist.Transactional;
 import javax.inject.Inject;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.InvalidAmountException;
+import memphis.fridge.protocol.Messages;
+import memphis.fridge.server.ioc.RequireAuthenticated;
 import memphis.fridge.utils.CurrencyUtils;
 
 import static memphis.fridge.utils.CurrencyUtils.toCents;
@@ -19,9 +22,14 @@ public class Transfer {
 	@Inject
 	UserDAO users;
 
-	public HMACResponse transfer(String snonce, String fromUser, String toUser, int amount, String hmac) {
-		users.validateHMAC(fromUser, hmac, snonce, fromUser, toUser, amount);
-		users.checkValidUser(toUser);
+	@Transactional
+	@RequireAuthenticated
+	public Messages.TransactionResponse transfer(Messages.TransferRequestOrBuilder request) {
+		String fromUser = request.getFromUser();
+		String toUser = request.getToUser();
+		int amount = request.getAmount();
+
+		users.checkValidUser(request.getToUser());
 
 		if (amount < 0) throw new InvalidAmountException();
 		if (amount > 0) {
@@ -32,20 +40,8 @@ public class Transfer {
 		}
 
 		User user = users.retrieveUser(fromUser);
-		BigDecimal balance = user.getBalance();
-		return new TransferResponse(fromUser, snonce, toCents(balance));
-	}
-
-	private class TransferResponse extends HMACResponse {
-		int balance;
-
-		private TransferResponse(String username, String snonce, int balance) {
-			super(users, username, snonce, balance);
-			this.balance = balance;
-		}
-
-		public void visitParams(ResponseSerializer.ObjectSerializer visitor) {
-			visitor.visitInteger("balance", balance);
-		}
+		return Messages.TransactionResponse.newBuilder()
+				.setBalance(toCents(user.getBalance()))
+				.setCost(amount).build();
 	}
 }

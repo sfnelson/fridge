@@ -12,7 +12,7 @@ import com.google.gwt.safehtml.shared.UriUtils;
 public class Product extends JavaScriptObject {
 
 	public static native JsArray<Product> parse(String json) /*-{
-		return eval('(' + json + ')');
+		return eval('(' + json + ')').stock;
 	}-*/;
 
 	protected Product() {

@@ -4,11 +4,16 @@ import javax.inject.Inject;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.FridgeException;
+import memphis.fridge.protocol.Messages;
+import memphis.fridge.server.ioc.AuthModule;
 import memphis.fridge.server.ioc.MockInjectingRunner;
+import memphis.fridge.server.ioc.SessionState;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import static memphis.fridge.server.TestingData.*;
 import static memphis.fridge.utils.CurrencyUtils.toCents;
 import static org.easymock.EasyMock.expect;
@@ -19,6 +24,7 @@ import static org.easymock.EasyMock.expect;
  */
 @RunWith(MockInjectingRunner.class)
 @MockInjectingRunner.ToInject({GetProducts.class})
+@MockInjectingRunner.WithModules({AuthModule.class})
 public class GetProductsTest {
 
 	@Inject
@@ -31,13 +37,8 @@ public class GetProductsTest {
 	@MockInjectingRunner.Mock
 	User u;
 
-	@Inject
 	@MockInjectingRunner.Mock
-	ResponseSerializer.ListSerializer resp;
-
-	@Inject
-	@MockInjectingRunner.Mock
-	ResponseSerializer.ObjectSerializer os;
+	SessionState s;
 
 	@Before
 	public void setUp() throws Exception {
@@ -48,9 +49,12 @@ public class GetProductsTest {
 	public void testGetProductsNoUser() throws Exception {
 		expect(p.fridge.getGraduateDiscount()).andReturn(GRAD_TAX);
 		expect(p.products.getEnabledProducts()).andReturn(products());
-		expectCoke(false);
-		expectCookie(false);
-		test(null);
+
+		Messages.StockResponse r = test(null);
+
+		assertEquals(2, r.getStockCount());
+		checkCoke(r.getStock(0), false);
+		checkCookie(r.getStock(1), false);
 	}
 
 	@Test
@@ -59,9 +63,12 @@ public class GetProductsTest {
 		expect(p.products.getEnabledProducts()).andReturn(products());
 		expect(p.users.retrieveUser(USERNAME)).andReturn(u);
 		expect(u.isGrad()).andReturn(true);
-		expectCoke(true);
-		expectCookie(true);
-		test(USERNAME);
+
+		Messages.StockResponse r = test(USERNAME);
+
+		assertEquals(2, r.getStockCount());
+		checkCoke(r.getStock(0), true);
+		checkCookie(r.getStock(1), true);
 	}
 
 	@Test
@@ -70,42 +77,45 @@ public class GetProductsTest {
 		expect(p.products.getEnabledProducts()).andReturn(products());
 		expect(p.users.retrieveUser(USERNAME)).andReturn(u);
 		expect(u.isGrad()).andReturn(false);
-		expectCoke(false);
-		expectCookie(false);
-		test(USERNAME);
+
+		Messages.StockResponse r = test(USERNAME);
+
+		assertEquals(2, r.getStockCount());
+		checkCoke(r.getStock(0), false);
+		checkCookie(r.getStock(1), false);
 	}
 
-	private void test(String username) {
+	private Messages.StockResponse test(String username) {
+		Messages.StockResponse r;
 		m.replay();
 		try {
-			ListResponse<?> r = p.getProducts(username);
-			r.visit(resp);
+			r = p.getProducts(username);
+			assertNotNull(r);
 		} catch (FridgeException ex) {
 			m.verify();
 			throw ex;
 		}
 		m.verify();
+		return r;
 	}
 
-	private void expectCoke(boolean isGrad) {
+	private void checkCoke(Messages.StockResponse.Stock item, boolean isGrad) {
 		Product coke = coke();
-		expect(resp.visitObject()).andReturn(os);
-		os.visitString("product_code", coke.getProductCode());
-		os.visitString("description", coke.getDescription());
-		os.visitInteger("in_stock", coke.getInStock());
-		os.visitInteger("price", toCents(cokeTotal(isGrad)));
-		os.visitString("category", coke.getCategory().getTitle());
-		os.visitInteger("category_order", coke.getCategory().getDisplaySequence());
+		assertEquals(coke.getProductCode(), item.getProductCode());
+		assertEquals(coke.getDescription(), item.getDescription());
+		assertEquals(coke.getInStock(), item.getInStock());
+		assertEquals(toCents(cokeTotal(isGrad)), item.getPrice());
+		assertEquals(coke.getCategory().getTitle(), item.getCategory());
+		assertEquals(coke.getCategory().getDisplaySequence(), item.getCategoryOrder());
 	}
 
-	private void expectCookie(boolean isGrad) {
+	private void checkCookie(Messages.StockResponse.Stock item, boolean isGrad) {
 		Product cookie = cookie();
-		expect(resp.visitObject()).andReturn(os);
-		os.visitString("product_code", cookie.getProductCode());
-		os.visitString("description", cookie.getDescription());
-		os.visitInteger("in_stock", cookie.getInStock());
-		os.visitInteger("price", toCents(cookieTotal(isGrad)));
-		os.visitString("category", cookie.getCategory().getTitle());
-		os.visitInteger("category_order", cookie.getCategory().getDisplaySequence());
+		assertEquals(cookie.getProductCode(), item.getProductCode());
+		assertEquals(cookie.getDescription(), item.getDescription());
+		assertEquals(cookie.getInStock(), item.getInStock());
+		assertEquals(toCents(cookieTotal(isGrad)), item.getPrice());
+		assertEquals(cookie.getCategory().getTitle(), item.getCategory());
+		assertEquals(cookie.getCategory().getDisplaySequence(), item.getCategoryOrder());
 	}
 }

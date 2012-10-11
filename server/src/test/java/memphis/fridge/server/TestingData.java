@@ -1,12 +1,12 @@
 package memphis.fridge.server;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.ProductCategory;
+import memphis.fridge.protocol.Messages;
 import memphis.fridge.utils.Pair;
 
 import static memphis.fridge.utils.CurrencyUtils.*;
@@ -27,17 +27,17 @@ public class TestingData {
 	public static final BigDecimal COKE_TAX_UNIT = markup(COKE_BASE, COKE_TAX_RATE);
 	public static final int COKE_STOCK = 18;
 
-    public static ProductCategory drinkCategory() {
-        return new ProductCategory(0, 1, "Drinks");
-    }
+	public static ProductCategory drinkCategory() {
+		return new ProductCategory(0, 1, "Drinks");
+	}
 
-    public static ProductCategory snackCategory() {
-        return new ProductCategory(1, 2, "Snacks");
-    }
+	public static ProductCategory snackCategory() {
+		return new ProductCategory(1, 2, "Snacks");
+	}
 
-    public static ProductCategory chocolateCategory() {
-        return new ProductCategory(2, 3, "Chocolate");
-    }
+	public static ProductCategory chocolateCategory() {
+		return new ProductCategory(2, 3, "Chocolate");
+	}
 
 	public static Product coke() {
 		Product coke = new Product("CC", "Coke Can", COKE_BASE, COKE_TAX_RATE, drinkCategory());
@@ -85,8 +85,11 @@ public class TestingData {
 			pair("CT", ORDER_NUM_COOKIE)
 	};
 
-	public static List<Pair<String, Integer>> order() {
-		return Arrays.asList(order);
+	public static Messages.PurchaseRequest order() {
+		Messages.PurchaseRequest.Builder rq = Messages.PurchaseRequest.newBuilder();
+		rq.addOrdersBuilder().setCode("CC").setQuantity(ORDER_NUM_COKE);
+		rq.addOrdersBuilder().setCode("CT").setQuantity(ORDER_NUM_COOKIE);
+		return rq.build();
 	}
 
 	public static final BigDecimal GRAD_TAX = fromPercent(10);

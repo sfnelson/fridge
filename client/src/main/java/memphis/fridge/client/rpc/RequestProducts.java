@@ -18,7 +18,7 @@ import javax.inject.Inject;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-public class RequestProducts {
+public class RequestProducts extends FridgeRequest {
 
 	private static final Logger log = Logger.getLogger("products");
 
@@ -41,7 +41,7 @@ public class RequestProducts {
 		}
 	}
 
-	private static class Callback implements RequestCallback {
+	private class Callback implements RequestCallback {
 		private final Handler handler;
 
 		public Callback(Handler handler) {
@@ -93,7 +93,7 @@ public class RequestProducts {
 
 	private static final SafeUri createRequest(@Nullable String username) {
 		return UriUtils.fromSafeConstant(
-				"/memphis/fridge/rest/get_products/json" +
+				"/memphis/fridge/rest/products/list/json" +
 						(username != null ? "?username=" + UriUtils.encode(username) : "")
 		);
 	}

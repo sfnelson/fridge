@@ -131,8 +131,8 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 			};
 
 			nonce.get().requestNonce(details, new RequestNonce.Handler() {
-				public void onNonceReceived(String snonce) {
-					purchase.get().requestOrder(snonce, details.getUsername(), content, callback);
+				public void onNonceReceived(String nonce) {
+					purchase.get().requestOrder(nonce, details, content, callback);
 				}
 
 				public void onError(Throwable exception) {

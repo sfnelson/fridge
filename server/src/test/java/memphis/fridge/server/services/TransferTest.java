@@ -9,8 +9,6 @@ import memphis.fridge.exceptions.FridgeException;
 import memphis.fridge.exceptions.InsufficientFundsException;
 import memphis.fridge.exceptions.InvalidAmountException;
 import memphis.fridge.exceptions.InvalidUserException;
-import memphis.fridge.server.io.HMACResponse;
-import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.server.ioc.MockInjectingRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +59,7 @@ public class TransferTest {
 	@Test(expected = FridgeException.class)
 	public void testTransferBadHMAC() throws Exception {
 		users.validateHMAC(fromUser, hmac, snonce, fromUser, toUser, amount);
-		expectLastCall().andThrow(new FridgeException(1, "invalid hmac"));
+		expectLastCall().andThrow(new FridgeException("invalid hmac"));
 
 		test(amount);
 	}

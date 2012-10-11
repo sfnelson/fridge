@@ -12,8 +12,6 @@ import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.InsufficientStockException;
 import memphis.fridge.exceptions.InvalidProductException;
-import memphis.fridge.server.io.HMACResponse;
-import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.utils.Pair;
 
 import static memphis.fridge.utils.CurrencyUtils.*;

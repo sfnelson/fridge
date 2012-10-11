@@ -6,8 +6,6 @@ import javax.inject.Inject;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.InvalidAmountException;
-import memphis.fridge.server.io.HMACResponse;
-import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.utils.CurrencyUtils;
 
 import static memphis.fridge.utils.CurrencyUtils.toCents;

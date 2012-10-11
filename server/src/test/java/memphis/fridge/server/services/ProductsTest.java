@@ -43,7 +43,7 @@ public class ProductsTest {
     @Test(expected = FridgeException.class)
     public void testAddProductInvalidHMAC() throws Exception {
         products.userDAO.validateHMAC(USERNAME, HMAC, ADD_HMAC_DATA);
-        expectLastCall().andThrow(new FridgeException(1, "Invalid HMAC"));
+        expectLastCall().andThrow(new FridgeException("Invalid HMAC"));
 
         testAdd();
     }
@@ -106,7 +106,7 @@ public class ProductsTest {
     @Test(expected = FridgeException.class)
     public void testUpdateProductInvalidHMac() throws Exception {
         products.userDAO.validateHMAC(USERNAME, HMAC, UPDATE_HMAC_DATA);
-        expectLastCall().andThrow(new FridgeException(1, "Invalid HMAC"));
+        expectLastCall().andThrow(new FridgeException("Invalid HMAC"));
 
         testUpdate();
     }

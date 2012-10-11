@@ -55,7 +55,7 @@ public class CryptUtils {
 			log.severe(e.getMessage());
 		}
 
-		throw new FridgeException(1, "Unrecoverable signing error.");
+		throw new FridgeException("Unrecoverable signing error.");
 	}
 
 	public static String md5(String message) throws Exception {

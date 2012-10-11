@@ -62,7 +62,7 @@ public class UserDAO {
 	public void checkAdmin(String username) {
 		User user = retrieveUser(username);
 		if (!user.isAdmin()) {
-			throw new FridgeException(1, "user is not an admin");
+			throw new FridgeException("user is not an admin");
 		}
 	}
 
@@ -71,11 +71,11 @@ public class UserDAO {
 
 		if (password == null) {
 			// user does not exist
-			throw new FridgeException(1, "Unable to validate request.");
+			throw new FridgeException("Unable to validate request.");
 		}
 
 		if (hmac != null && hmac.equals(CryptUtils.sign(password, toValidate))) return;
-		else throw new FridgeException(2, "Unable to validate request.");
+		else throw new FridgeException("Unable to validate request.");
 	}
 
 	public String createHMAC(String username, Object... toSign) throws FridgeException {
@@ -83,10 +83,21 @@ public class UserDAO {
 
 		if (password == null) {
 			// user does not exist
-			throw new FridgeException(1, "Unable to validate request.");
+			throw new InvalidUserException(username);
 		}
 
 		return CryptUtils.sign(password, toSign);
+	}
+
+	public String createHMAC(String username, byte[] message) throws FridgeException {
+		String password = getPassword(username);
+
+		if (password == null) {
+			// user does not exist
+			throw new InvalidUserException(username);
+		}
+
+		return CryptUtils.sign(password, message);
 	}
 
 	@VisibleForTesting

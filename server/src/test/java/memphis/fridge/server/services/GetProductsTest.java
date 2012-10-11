@@ -4,8 +4,6 @@ import javax.inject.Inject;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.FridgeException;
-import memphis.fridge.server.io.ListResponse;
-import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.server.ioc.MockInjectingRunner;
 import org.junit.Before;
 import org.junit.Test;

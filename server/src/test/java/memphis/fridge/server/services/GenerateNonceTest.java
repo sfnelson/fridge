@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import memphis.fridge.dao.NonceDAO;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Nonce;
-import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.server.ioc.MockInjectingRunner;
 import memphis.fridge.server.ioc.MockInjectingRunner.Mock;
 import memphis.fridge.server.ioc.MockInjectingRunner.MockManager;

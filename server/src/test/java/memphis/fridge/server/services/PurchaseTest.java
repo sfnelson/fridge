@@ -6,8 +6,6 @@ import javax.inject.Inject;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.*;
-import memphis.fridge.server.io.HMACResponse;
-import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.server.ioc.MockInjectingRunner;
 import memphis.fridge.server.ioc.MockInjectingRunner.Mock;
 import memphis.fridge.server.ioc.MockInjectingRunner.MockManager;
@@ -56,7 +54,7 @@ public class PurchaseTest {
 	@Test(expected = FridgeException.class)
 	public void testPurchaseBadHMAC() throws Exception {
 		p.users.validateHMAC(USERNAME, HMAC, HMAC_ARGS);
-		expectLastCall().andThrow(new FridgeException(1, "invalid hmac"));
+		expectLastCall().andThrow(new FridgeException("invalid hmac"));
 		test();
 	}
 
@@ -72,7 +70,7 @@ public class PurchaseTest {
 		p.users.validateHMAC(USERNAME, HMAC, HMAC_ARGS);
 		expect(p.users.retrieveUser(USERNAME)).andReturn(user);
 		expect(user.isGrad()).andReturn(false);
-		expect(p.fridge.getGraduateDiscount()).andThrow(new FridgeException(1, "Database error"));
+		expect(p.fridge.getGraduateDiscount()).andThrow(new FridgeException("Database error"));
 		test();
 	}
 

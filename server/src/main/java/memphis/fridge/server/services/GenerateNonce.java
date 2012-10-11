@@ -7,8 +7,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import memphis.fridge.dao.NonceDAO;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Nonce;
-import memphis.fridge.server.io.HMACResponse;
-import memphis.fridge.server.io.ResponseSerializer;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>

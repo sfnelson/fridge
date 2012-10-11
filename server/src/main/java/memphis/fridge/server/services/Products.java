@@ -7,8 +7,6 @@ import memphis.fridge.dao.ProductsDAO;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.ProductCategory;
-import memphis.fridge.server.io.Response;
-import memphis.fridge.server.io.ResponseSerializer;
 import memphis.fridge.utils.CurrencyUtils;
 
 public class Products {

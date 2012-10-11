@@ -12,9 +12,6 @@ import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.FridgeException;
-import memphis.fridge.server.io.ListResponse;
-import memphis.fridge.server.io.ObjectResponse;
-import memphis.fridge.server.io.ResponseSerializer;
 
 import static memphis.fridge.utils.CurrencyUtils.markup;
 import static memphis.fridge.utils.CurrencyUtils.toCents;

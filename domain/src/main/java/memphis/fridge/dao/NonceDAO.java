@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import memphis.fridge.domain.Nonce;
+import memphis.fridge.exceptions.AuthenticationException;
 import memphis.fridge.exceptions.FridgeException;
 import memphis.fridge.utils.CryptUtils;
 
@@ -29,14 +30,14 @@ public class NonceDAO {
 		// check the timestamp
 		long now = System.currentTimeMillis() / 1000;
 		if (timestamp + Nonce.VALID_PERIOD < now) {
-			throw new FridgeException(1, "Timestamp too old.");
+			throw new FridgeException("Timestamp too old.");
 		}
 
 		// check client nonce doesn't already exist (replay)
 		TypedQuery<Long> q = em.get().createNamedQuery("Nonce.findExisting", Long.class);
 		q.setParameter("cnonce", cnonce);
 		if (0 != q.getSingleResult()) {
-			throw new FridgeException(2, "Invalid client nonce.");
+			throw new FridgeException("Invalid client nonce.");
 		}
 
 		// generate new server nonce
@@ -47,6 +48,24 @@ public class NonceDAO {
 		em.get().persist(nonce);
 
 		return nonce;
+	}
+
+	@Transactional
+	public String consumeNonce(String nonce) {
+
+		expireOldNonces();
+
+		Nonce record = em.get().find(Nonce.class, nonce);
+
+		if (record == null) {
+			throw new AuthenticationException("nonce is invalid/consumed");
+		}
+
+		em.get().remove(record);
+
+		String next = CryptUtils.generateNonceToken();
+		em.get().persist(new Nonce(next, nonce, new Date()));
+		return next;
 	}
 
 	private void expireOldNonces() {

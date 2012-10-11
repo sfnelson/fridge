@@ -2,26 +2,63 @@ package memphis.fridge;
 
 option java_package = "memphis.fridge.protocol";
 
-message SignedMessage {
-  required string username = 1;
-  required string message = 2;
-  required string signature = 3;
+option java_outer_classname = "Messages";
+
+message AccountRequest {
+    required string username = 1;
 }
 
-message Account {
-  required string username = 1;
-  optional string full_name = 2;
-  optional string email = 3;
+message AccountResponse {
+    required string username = 1;
+    optional string full_name = 2;
+    optional string email = 3;
 
-  optional int32 balance = 11;
-  optional int32 minimum_balance = 12;
+    optional int32 balance = 5;
+    optional int32 minimum_balance = 6;
 
-  optional bool is_grad = 21 [ default = false ];
-  optional bool is_admin = 22 [ default = false ];
-  optional bool is_enabled = 23 [ default = true ];
+    optional bool is_grad = 9;
+    optional bool is_admin = 10;
+    optional bool is_enabled = 11;
+}
 
-  optional string request_nonce = 31;
-  optional string response_nonce = 32;
+message TransferRequest {
+    required string from_user = 1;
+    required string to_user = 2;
+    required int32 amount = 3;
+}
 
-  required string hmac = 51;
+message PurchaseRequest {
+    message Order {
+        required string code = 1;
+        required int32 quantity = 2;
+    }
+    repeated Order orders = 1;
+}
+
+message TopupRequest {
+    required int32 amount = 1;
+}
+
+message TransactionResponse {
+    required int32 balance = 1;
+    optional int32 cost = 2;
+}
+
+message StockResponse {
+    message Stock {
+        required string product_code = 1;
+        required string description = 2;
+        required int32 in_stock = 3;
+        required int32 price = 4;
+        optional string category = 5;
+        optional int32 category_order = 6;
+    }
+    repeated Stock stock = 1;
+}
+
+message InfoResponse {
+    optional int32 num_served = 1;
+    optional string motd = 2;
+    repeated string admins = 3;
+    repeated string naughty_people = 4;
 }

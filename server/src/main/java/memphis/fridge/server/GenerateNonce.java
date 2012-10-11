@@ -2,15 +2,13 @@ package memphis.fridge.server;
 
 import com.google.inject.servlet.RequestScoped;
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import memphis.fridge.server.io.HMACResponse;
-import memphis.fridge.server.io.JSONObjectSerializer;
-import memphis.fridge.server.services.GenerateNonce;
+import javax.xml.ws.Response;
+import memphis.fridge.protocol.Messages;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -18,30 +16,16 @@ import memphis.fridge.server.services.GenerateNonce;
  */
 @Path("generate_nonce")
 @RequestScoped
-public class GenerateNonceRequest {
+public class GenerateNonce {
 
 	@Inject
-	GenerateNonce service;
-
-	@Inject
-	Provider<JSONObjectSerializer> serializer;
-
-	@QueryParam("cnonce")
-	String clientNonce;
-
-	@QueryParam("timestamp")
-	int timestamp;
-
-	@QueryParam("username")
-	String username;
-
-	@QueryParam("hmac")
-	String requestHMAC;
+	memphis.fridge.server.services.GenerateNonce service;
 
 	@GET
 	@Path("json")
 	@Produces(MediaType.APPLICATION_JSON)
-	public HMACResponse requestNonceJSON() {
+	public Response requestNonceJSON(Messages.NonceRequest request) {
+		service.
 		return service.generateNonce(clientNonce, timestamp, username, requestHMAC);
 	}
 

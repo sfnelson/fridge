@@ -2,6 +2,7 @@ package memphis.fridge.server.ioc;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.matcher.Matchers;
 import com.google.inject.persist.PersistFilter;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.servlet.GuiceServletContextListener;
@@ -21,8 +22,11 @@ public class FridgeWebServletConfig extends GuiceServletContextListener {
 			protected void configureServlets() {
 				install(new JpaPersistModule("FridgeDB"));
 
+				bindInterceptor(Matchers.any(), Matchers.annotatedWith(RequireAuthenticated.class),
+						new AuthenticationChecker(getProvider(SessionState.class)));
+
 				bind(AccountRequest.class);
-				bind(GenerateNonceRequest.class);
+				bind(GenerateNonce.class);
 				bind(GetProductsRequest.class);
 				bind(OrderRequest.class);
 				bind(ProductImages.class);

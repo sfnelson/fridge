@@ -49,10 +49,16 @@
             <version>[1.9.1,2.0.0)</version>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
             <version>[1.9.1,2.0.0)</version>
+        </dependency>-->
+
+        <dependency>
+            <groupId>com.googlecode.protobuf-java-format</groupId>
+            <artifactId>protobuf-java-format</artifactId>
+            <version>1.2</version>
         </dependency>
     </dependencies>
 

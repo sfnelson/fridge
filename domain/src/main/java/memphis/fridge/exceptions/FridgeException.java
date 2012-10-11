@@ -15,7 +15,7 @@ public class FridgeException extends RuntimeException {
 		super(message, ex);
 	}
 
-	public FridgeException(int code, String message) {
+	public FridgeException(String message) {
 		super(message);
 		this.code = code;
 	}

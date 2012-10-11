@@ -1,0 +1,27 @@
+package memphis.fridge;
+
+option java_package = "memphis.fridge.protocol";
+
+message SignedMessage {
+  required string username = 1;
+  required string message = 2;
+  required string signature = 3;
+}
+
+message Account {
+  required string username = 1;
+  optional string full_name = 2;
+  optional string email = 3;
+
+  optional int32 balance = 11;
+  optional int32 minimum_balance = 12;
+
+  optional bool is_grad = 21 [ default = false ];
+  optional bool is_admin = 22 [ default = false ];
+  optional bool is_enabled = 23 [ default = true ];
+
+  optional string request_nonce = 31;
+  optional string response_nonce = 32;
+
+  required string hmac = 51;
+}

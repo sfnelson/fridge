@@ -22,7 +22,13 @@
         <dependency>
             <groupId>memphis.fridge</groupId>
             <artifactId>fridge-domain</artifactId>
-            <version>[1.0.0-SNAPSHOT,]</version>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>memphis.fridge</groupId>
+            <artifactId>fridge-protocol</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -94,7 +100,7 @@
                         <artifactItem>
                             <groupId>memphis.fridge</groupId>
                             <artifactId>fridge-client</artifactId>
-                            <version>1.0.0-SNAPSHOT</version>
+                            <version>${project.version}</version>
                             <overWrite>true</overWrite>
                         </artifactItem>
                     </artifactItems>

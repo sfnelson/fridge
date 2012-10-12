@@ -1,8 +1,12 @@
 package memphis.fridge.dao;
 
+import java.util.Date;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 import memphis.fridge.domain.Nonce;
+import memphis.fridge.domain.User;
+import memphis.fridge.exceptions.AuthenticationException;
 import memphis.fridge.exceptions.FridgeException;
 import memphis.fridge.ioc.GuiceJPATestRunner;
 import memphis.fridge.ioc.GuiceTestRunner;
@@ -23,38 +27,55 @@ import static memphis.fridge.utils.CryptUtils.generateNonceToken;
 public class NonceDAOTest {
 
 	@Inject
+	Provider<UserDAO> users;
+
+	@Inject
 	Provider<NonceDAO> dao;
 
 	@Test
 	@GuiceJPATestRunner.Rollback
-	public void testGenerateNonce() throws Exception {
-		String cnonce = generateNonceToken();
-		int time = (int) (System.currentTimeMillis() / 1000);
-		Nonce nonce = dao.get().generateNonce(cnonce, time);
+	public void testConsumeNonce() throws Exception {
+		User user = users.get().retrieveUser("stephen");
+		String nonce = generateNonceToken();
+		Date timestamp = new Date();
+		dao.get().consumeNonce(user, nonce, timestamp);
+	}
+
+	@Test(expected = AuthenticationException.class)
+	@GuiceJPATestRunner.Rollback
+	public void testConsumeNonceFailOnReplay() throws Exception {
+		User user = users.get().retrieveUser("stephen");
+		String nonce = generateNonceToken();
+		Date timestamp = new Date();
+		dao.get().consumeNonce(user, nonce, timestamp);
+		dao.get().consumeNonce(user, nonce, timestamp); // should throw
 	}
 
 	@Test
 	@GuiceJPATestRunner.Rollback
-	public void testGenerateNonceStephen() throws Exception {
-		String cnonce = generateNonceToken();
-		int time = (int) (System.currentTimeMillis() / 1000);
-		Nonce nonce = dao.get().generateNonce(cnonce, time);
+	public void testConsumeNonceVariations() throws Exception {
+		User user1 = users.get().retrieveUser("stephen");
+		User user2 = users.get().retrieveUser("chris");
+		String nonce1 = generateNonceToken();
+		String nonce2 = generateNonceToken();
+		Date timestamp1 = new Date();
+		Date timestamp2 = new Date(timestamp1.getTime() + 1000);
+		dao.get().consumeNonce(user1, nonce1, timestamp1);
+		dao.get().consumeNonce(user2, nonce1, timestamp1);
+		dao.get().consumeNonce(user1, nonce2, timestamp1);
+		dao.get().consumeNonce(user2, nonce2, timestamp1);
+		dao.get().consumeNonce(user1, nonce1, timestamp2);
+		dao.get().consumeNonce(user2, nonce1, timestamp2);
+		dao.get().consumeNonce(user1, nonce2, timestamp2);
+		dao.get().consumeNonce(user2, nonce2, timestamp2);
 	}
 
 	@Test(expected = FridgeException.class)
 	@GuiceJPATestRunner.Rollback
 	public void testFailOnOldNonce() throws Exception {
-		String cnonce = generateNonceToken();
-		int time = (int) (System.currentTimeMillis() / 1000) - Nonce.VALID_PERIOD * 2;
-		Nonce nonce = dao.get().generateNonce(cnonce, time);
-	}
-
-	@Test(expected = FridgeException.class)
-	@GuiceJPATestRunner.Rollback
-	public void testFailOnReplayNonce() throws Exception {
-		String cnonce = generateNonceToken();
-		int time = (int) (System.currentTimeMillis() / 1000);
-		Nonce nonce1 = dao.get().generateNonce(cnonce, time);
-		Nonce nonce2 = dao.get().generateNonce(cnonce, time);
+		User user = users.get().retrieveUser("stephen");
+		String nonce = generateNonceToken();
+		Date timestamp = new Date(System.currentTimeMillis() - Nonce.VALID_PERIOD * 2000);
+		dao.get().consumeNonce(user, nonce, timestamp);
 	}
 }

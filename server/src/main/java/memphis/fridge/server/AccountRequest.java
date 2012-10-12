@@ -8,6 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import memphis.fridge.protocol.Messages;
+import memphis.fridge.server.io.Signed;
 import memphis.fridge.server.services.AccountService;
 
 /**
@@ -25,7 +26,7 @@ public class AccountRequest {
 	@Path("info/json")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Messages.AccountResponse requestAccountDetails(Messages.AccountRequest input) {
+	public Messages.AccountResponse requestAccountDetails(@Signed("account-request") Messages.AccountRequest input) {
 		return service.getAccountDetails(input.getUsername());
 	}
 }

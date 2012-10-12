@@ -12,7 +12,6 @@ import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.Window;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -25,9 +24,6 @@ public class RequestProducts extends FridgeRequest {
 	public interface Handler {
 		void productsReady(List<? extends Product> products);
 	}
-
-	@Inject
-	Session session;
 
 	public void requestProducts(String username, Handler handler) {
 		SafeUri uri = createRequest(username);

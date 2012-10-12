@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 public class Purchase {
 
 	@Embeddable
-	protected class PurchaseId implements Serializable {
+	protected static class PurchaseId implements Serializable {
 		@NotNull
 		@ManyToOne(optional = false)
 		@JoinColumn(name = "username", referencedColumnName = "username")
@@ -38,6 +38,28 @@ public class Purchase {
 			this.user = user;
 			this.product = product;
 			this.timestamp = timestamp;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof PurchaseId)) return false;
+
+			PurchaseId that = (PurchaseId) o;
+
+			if (!product.equals(that.product)) return false;
+			if (!timestamp.equals(that.timestamp)) return false;
+			if (!user.equals(that.user)) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = user.hashCode();
+			result = 31 * result + product.hashCode();
+			result = 31 * result + timestamp.hashCode();
+			return result;
 		}
 	}
 

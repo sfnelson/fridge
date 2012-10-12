@@ -9,9 +9,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import memphis.fridge.domain.Nonce;
+import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.AuthenticationException;
-import memphis.fridge.exceptions.FridgeException;
-import memphis.fridge.utils.CryptUtils;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -23,54 +22,31 @@ public class NonceDAO {
 	Provider<EntityManager> em;
 
 	@Transactional
-	public Nonce generateNonce(String cnonce, int timestamp) {
+	public void consumeNonce(User user, String nonce, Date timestamp) {
 
 		expireOldNonces();
 
 		// check the timestamp
-		long now = System.currentTimeMillis() / 1000;
-		if (timestamp + Nonce.VALID_PERIOD < now) {
-			throw new FridgeException("Timestamp too old.");
+		if (timestamp.getTime() + Nonce.VALID_PERIOD * 1000 < System.currentTimeMillis()) {
+			throw new AuthenticationException("Timestamp too old.");
 		}
 
 		// check client nonce doesn't already exist (replay)
 		TypedQuery<Long> q = em.get().createNamedQuery("Nonce.findExisting", Long.class);
-		q.setParameter("cnonce", cnonce);
+		q.setParameter("user", user);
+		q.setParameter("nonce", nonce);
+		q.setParameter("timestamp", timestamp);
 		if (0 != q.getSingleResult()) {
-			throw new FridgeException("Invalid client nonce.");
+			throw new AuthenticationException("Nonce already exists, possible replay");
 		}
 
-		// generate new server nonce
-		String snonce = CryptUtils.generateNonceToken();
-
-		// create and store nonce
-		Nonce nonce = new Nonce(snonce, cnonce, new Date());
-		em.get().persist(nonce);
-
-		return nonce;
-	}
-
-	@Transactional
-	public String consumeNonce(String nonce) {
-
-		expireOldNonces();
-
-		Nonce record = em.get().find(Nonce.class, nonce);
-
-		if (record == null) {
-			throw new AuthenticationException("nonce is invalid/consumed");
-		}
-
-		em.get().remove(record);
-
-		String next = CryptUtils.generateNonceToken();
-		em.get().persist(new Nonce(next, nonce, new Date()));
-		return next;
+		// store nonce
+		em.get().persist(new Nonce(user, nonce, timestamp));
 	}
 
 	private void expireOldNonces() {
 		Query q = em.get().createNativeQuery(
-				"DELETE FROM nonces WHERE created_at < now() - interval '10 minutes';");
+				"DELETE FROM nonces WHERE timestamp < now() - interval '10 minutes';");
 		q.executeUpdate();
 	}
 }

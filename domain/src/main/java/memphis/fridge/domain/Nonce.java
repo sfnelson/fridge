@@ -1,9 +1,11 @@
 package memphis.fridge.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -13,56 +15,70 @@ import javax.validation.constraints.NotNull;
 @Table(name = "nonces")
 @NamedQueries({
 		@NamedQuery(name = "Nonce.findExisting",
-				query = "SELECT count(n) FROM Nonce n WHERE n.clientNonce = :cnonce")
+				query = "SELECT count(n) FROM Nonce n WHERE n.id.user = :user "
+						+ "AND n.id.nonce = :nonce AND n.id.timestamp = :timestamp")
 })
 public class Nonce {
 
 	public static final int VALID_PERIOD = 600; // 10 minutes
 
-	@Id
-	@NotNull
-	@Column(name = "snonce")
-	private String serverNonce;
+	@Embeddable
+	protected static class NonceId implements Serializable {
+		@NotNull
+		@ManyToOne(optional = false)
+		@JoinColumn(name = "username", referencedColumnName = "username")
+		private User user;
 
-	@NotNull
-	@Column(name = "cnonce")
-	private String clientNonce;
+		@NotNull
+		@Size(max = 20)
+		@Column(name = "nonce", nullable = false, length = 20)
+		private String nonce;
 
-	@NotNull
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "created_at")
-	private Date createAt;
+		@NotNull
+		@Temporal(TemporalType.TIMESTAMP)
+		@Column(name = "timestamp", nullable = false)
+		private Date timestamp;
 
-	public Nonce(String serverNonce, String clientNonce, Date createAt) {
-		this.serverNonce = serverNonce;
-		this.clientNonce = clientNonce;
-		this.createAt = createAt;
+		public NonceId() {
+		}
+
+		public NonceId(User user, String nonce, Date timestamp) {
+			this.user = user;
+			this.nonce = nonce;
+			this.timestamp = timestamp;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof NonceId)) return false;
+
+			NonceId nonceId = (NonceId) o;
+
+			if (!nonce.equals(nonceId.nonce)) return false;
+			if (!timestamp.equals(nonceId.timestamp)) return false;
+			if (!user.equals(nonceId.user)) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = user.hashCode();
+			result = 31 * result + nonce.hashCode();
+			result = 31 * result + timestamp.hashCode();
+			return result;
+		}
+	}
+
+	@EmbeddedId
+	@NotNull
+	private NonceId id;
+
+	public Nonce(User user, String nonce, Date timestamp) {
+		this.id = new NonceId(user, nonce, timestamp);
 	}
 
 	Nonce() {
 	}
-
-	/**
-	 * A nonce is only valid for a short time after being generated (currently 10 minutes).
-	 */
-	public Date getCreatedAt() {
-		return createAt;
-	}
-
-	/**
-	 * The server nonce is a unique token that can be consumed by a client to perform an action on the server.
-	 */
-	public String getServerNonce() {
-		return serverNonce;
-	}
-
-	/**
-	 * The client nonce is a unique token provided and signed by the client when requesting a server nonce.
-	 * The one-to-one mapping between cnonce and snonce prevents unauthenticated parties from filling the
-	 * nonce table by replaying nonce requests.
-	 */
-	public String getClientNonce() {
-		return clientNonce;
-	}
-
 }

@@ -7,6 +7,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import memphis.fridge.protocol.Messages;
+import memphis.fridge.server.io.Signed;
 import memphis.fridge.server.services.Purchase;
 
 /**
@@ -15,6 +16,9 @@ import memphis.fridge.server.services.Purchase;
  */
 @Path("purchase")
 public class OrderRequest {
+
+	private static final String VERB = "purchase-request";
+
 	@Inject
 	Purchase service;
 
@@ -22,7 +26,7 @@ public class OrderRequest {
 	@Path("json")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Messages.TransactionResponse orderRequest(Messages.PurchaseRequest request) {
+	public Messages.TransactionResponse orderRequest(@Signed(VERB) Messages.PurchaseRequest request) {
 		return service.purchase(request);
 	}
 }

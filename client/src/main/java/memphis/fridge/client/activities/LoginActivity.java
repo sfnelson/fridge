@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import javax.inject.Inject;
 import memphis.fridge.client.places.SessionPlace;
-import memphis.fridge.client.rpc.Session;
 import memphis.fridge.client.utils.CryptUtils;
 import memphis.fridge.client.views.LoginView;
 
@@ -20,9 +19,6 @@ public class LoginActivity extends AbstractActivity implements LoginView.Present
 
 	@Inject
 	LoginView view;
-
-	@Inject
-	Session session;
 
 	@Inject
 	PlaceController pc;

@@ -11,9 +11,7 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
 
-import javax.inject.Inject;
 import memphis.fridge.client.places.SessionPlace;
-import memphis.fridge.client.utils.CryptUtils;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -22,49 +20,43 @@ import memphis.fridge.client.utils.CryptUtils;
 public class RequestPurchase extends FridgeRequest {
 	private static final Logger log = Logger.getLogger("RequestNonce");
 
-	public static interface OrderResponseHandler {
+	private static final String VERB = "purchase-request";
+
+	public static interface Handler {
 		public void onOrderProcessed(int balance, int orderTotal);
 
 		public void onError(Throwable exception);
 	}
 
-	@Inject
-	CryptUtils crypt;
+	public void requestOrder(SessionPlace details, List<PurchaseEntry> cart, Handler callback) {
+		init(details);
 
-	@Inject
-	Session session;
-
-	public void requestOrder(String nonce, SessionPlace details, List<PurchaseEntry> cart, OrderResponseHandler request) {
 		OrderRequest params = OrderRequest.createRequest();
 		for (PurchaseEntry p : cart) {
 			params.addItem(p.getProductCode(), p.getNumber());
 		}
 		String message = params.serialize();
 
-		RequestBuilder builder = initRequest(url(), RequestBuilder.POST, details, nonce, message);
-		builder.setHeader("Content-Type", "application/json");
-		builder.setRequestData(message);
-		builder.setCallback(new Callback(details, nonce, request));
 		try {
-			builder.send();
+			request(RequestBuilder.POST, url(), VERB, message, new Callback(this, callback)).send();
 		} catch (RequestException ex) {
 			log.warning("error sending request: " + ex.getMessage());
 		}
 	}
 
-	private class Callback extends FridgeRequest.Callback<OrderResponseHandler> {
-		private Callback(SessionPlace details, String nonce, OrderResponseHandler handler) {
-			super(details, nonce, handler, 200);
+	private static class Callback extends FridgeRequest.Callback<Handler> {
+		private Callback(RequestPurchase req, Handler handler) {
+			super(req, 200, handler);
 		}
 
 		@Override
-		protected void doCallbackSuccess(OrderResponseHandler handler, String message, Response response) {
+		protected void doCallbackSuccess(Handler handler, String message, Response response) {
 			OrderResponse r = JsonUtils.safeEval(message);
 			handler.onOrderProcessed(r.getBalance(), r.getOrderTotal());
 		}
 
 		@Override
-		protected void doCallbackFailure(OrderResponseHandler handler, Throwable ex) {
+		protected void doCallbackFailure(Handler handler, Throwable ex) {
 			handler.onError(ex);
 		}
 	}

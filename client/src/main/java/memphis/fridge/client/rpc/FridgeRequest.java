@@ -16,48 +16,70 @@ import memphis.fridge.client.utils.CryptUtils;
  */
 public abstract class FridgeRequest {
 
-	@Inject
-	CryptUtils crypt;
+	public static final String CONTENT_TYPE = "Content-Type";
+	public static final String APPLICATION_JSON = "application/json";
 
-	protected RequestBuilder initRequest(SafeUri url, RequestBuilder.Method method, SessionPlace details, String nonce, String message) {
-		RequestBuilder builder = new RequestBuilder(method, url.asString());
-		String signature = crypt.sign(details.getSecret(), details.getUsername(), nonce, message);
-		builder.setHeader("fridge-username", details.getUsername());
-		builder.setHeader("fridge-nonce", nonce);
-		builder.setHeader("fridge-signature", signature);
+	private static final String USERNAME = "fridge-username";
+	private static final String NONCE = "fridge-nonce";
+	private static final String TIMESTAMP = "fridge-timestamp";
+	private static final String SIGNATURE = "fridge-signature";
+
+	@Inject
+	private CryptUtils crypt;
+
+	protected SessionPlace details;
+	protected String username;
+	protected String nonce;
+	protected String timestamp;
+
+	protected void init(SessionPlace details) {
+		this.details = details;
+		this.username = details.getUsername();
+		this.nonce = crypt.generateNonceToken();
+		this.timestamp = String.valueOf((int) (System.currentTimeMillis() / 1000));
+	}
+
+	protected RequestBuilder request(RequestBuilder.Method method, SafeUri uri, String verb, String message, RequestCallback callback) {
+		RequestBuilder builder = new RequestBuilder(method, uri.asString());
+		String signature = crypt.sign(details.getSecret(), username, nonce, timestamp, verb, message);
+		builder.setHeader(USERNAME, username);
+		builder.setHeader(NONCE, nonce);
+		builder.setHeader(TIMESTAMP, timestamp);
+		builder.setHeader(SIGNATURE, signature);
+		builder.setHeader(CONTENT_TYPE, APPLICATION_JSON);
+		builder.setRequestData(message);
+		builder.setCallback(callback);
 		return builder;
 	}
 
-	protected String validateResponse(SessionPlace details, String nonce, Response response) {
-		String username = response.getHeader("fridge-username");
-		String old_nonce = response.getHeader("fridge-nonce-old");
-		String new_nonce = response.getHeader("fridge-nonce-new");
-		String signature = response.getHeader("fridge-signature");
+	protected String validateResponse(Response response) {
+		String server_username = response.getHeader(USERNAME);
+		String server_nonce = response.getHeader(NONCE);
+		String server_time = response.getHeader(TIMESTAMP);
+		String signature = response.getHeader(SIGNATURE);
 		String message = response.getText();
-		if (username == null || !username.equals(details.getUsername())) {
+		if (server_username == null || !server_username.equals(username)) {
 			throw new RuntimeException("bad username");
-		} else if (old_nonce == null || !old_nonce.equals(nonce)) {
-			throw new RuntimeException("bad client nonce");
-		} else if (new_nonce == null) {
+		} else if (server_nonce == null || !server_nonce.equals(nonce)) {
+			throw new RuntimeException("bad nonce");
+		} else if (server_time == null || !server_time.equals(timestamp)) {
 			throw new RuntimeException("bad server nonce");
 		} else if (signature == null) {
 			throw new RuntimeException("bad signature");
-		} else if (!crypt.verify(details.getSecret(), signature, username, old_nonce, new_nonce, message)) {
+		} else if (!crypt.verify(details.getSecret(), signature, username, nonce, timestamp, message)) {
 			throw new RuntimeException("account info failed verification");
 		} else {
 			return message;
 		}
 	}
 
-	protected abstract class Callback<H> implements RequestCallback {
+	protected static abstract class Callback<H> implements RequestCallback {
+		protected final FridgeRequest req;
 		protected final H handler;
-		protected final SessionPlace details;
-		protected final String nonce;
 		protected final int success;
 
-		protected Callback(SessionPlace details, String nonce, H handler, int success) {
-			this.details = details;
-			this.nonce = nonce;
+		protected Callback(FridgeRequest req, int success, H handler) {
+			this.req = req;
 			this.handler = handler;
 			this.success = success;
 		}
@@ -66,11 +88,10 @@ public abstract class FridgeRequest {
 			try {
 				if (response.getStatusCode() == success) {
 					try {
-						String message = validateResponse(details, nonce, response);
+						String message = req.validateResponse(response);
 						doCallbackSuccess(handler, message, response);
 					} catch (IllegalArgumentException ex) {
-						new RuntimeException("parsing nonce response failed.\n"
-								+ ex.getMessage());
+						new RuntimeException("parsing nonce response failed.\n" + ex.getMessage());
 					}
 				} else {
 					throw new RuntimeException("unexpected response from server: "

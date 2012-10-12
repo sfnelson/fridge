@@ -73,6 +73,26 @@ public class CreditLogEntry {
 			this.user = user;
 			this.timestamp = timestamp;
 		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof CreditLogId)) return false;
+
+			CreditLogId that = (CreditLogId) o;
+
+			if (!timestamp.equals(that.timestamp)) return false;
+			if (!user.equals(that.user)) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = user.hashCode();
+			result = 31 * result + timestamp.hashCode();
+			return result;
+		}
 	}
 
 	@EmbeddedId

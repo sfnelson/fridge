@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.google.gwt.activity.shared.AbstractActivity;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.place.shared.PlaceController;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
@@ -17,6 +19,7 @@ import memphis.fridge.client.events.AccountEvent;
 import memphis.fridge.client.events.AccountHandler;
 import memphis.fridge.client.events.ProductEvent;
 import memphis.fridge.client.events.ProductHandler;
+import memphis.fridge.client.places.LoginPlace;
 import memphis.fridge.client.places.SessionPlace;
 import memphis.fridge.client.rpc.*;
 import memphis.fridge.client.views.PurchaseView;
@@ -35,16 +38,13 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	PurchaseView view;
 
 	@Inject
-	Session session;
-
-	@Inject
 	Provider<RequestProducts> productsRequest;
 
 	@Inject
-	Provider<RequestNonce> nonce;
+	Provider<RequestPurchase> purchase;
 
 	@Inject
-	Provider<RequestPurchase> purchase;
+	PlaceController pc;
 
 	private SessionPlace details;
 
@@ -116,27 +116,21 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 		}
 		boolean confirm = Window.confirm("Your account will be charged " + printCurrency(total).asString());
 		if (confirm) {
-			final RequestPurchase.OrderResponseHandler callback = new RequestPurchase.OrderResponseHandler() {
+			purchase.get().requestOrder(details, content, new RequestPurchase.Handler() {
 				public void onOrderProcessed(int balance, int orderTotal) {
 					order.clear();
 					Window.alert("Success! Your balance is now " + printCurrency(balance).asString());
-					session.logout();
+					Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+						public void execute() {
+							pc.goTo(new LoginPlace(details.getUsername()));
+						}
+					});
 				}
 
 				public void onError(Throwable exception) {
 					log.warning("error placing order: " + exception.getMessage());
 					// TODO better error handling
 					Window.alert("failed to place order!");
-				}
-			};
-
-			nonce.get().requestNonce(details, new RequestNonce.Handler() {
-				public void onNonceReceived(String nonce) {
-					purchase.get().requestOrder(nonce, details, content, callback);
-				}
-
-				public void onError(Throwable exception) {
-					callback.onError(exception);
 				}
 			});
 		}

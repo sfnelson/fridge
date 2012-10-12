@@ -50,8 +50,12 @@ public class SignedJsonMessageReader<T> implements MessageBodyReader<T> {
 
 		String message = CharStreams.toString(new InputStreamReader(entityStream));
 
-		/* check for and validate signed messages */
-		session.get().authenticate(httpHeaders, message);
+		for (Annotation a : annotations) {
+			if (a instanceof Signed) {
+				/* check for and validate signed messages */
+				session.get().authenticate((Signed) a, httpHeaders, message);
+			}
+		}
 
 		GeneratedMessage.Builder builder;
 		try {

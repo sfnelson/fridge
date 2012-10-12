@@ -13,8 +13,7 @@ import javax.inject.Provider;
 import memphis.fridge.client.places.LoginPlace;
 import memphis.fridge.client.places.SessionPlace;
 import memphis.fridge.client.rpc.Account;
-import memphis.fridge.client.rpc.RequestAccountInfo;
-import memphis.fridge.client.rpc.RequestNonce;
+import memphis.fridge.client.rpc.AccountRequest;
 import memphis.fridge.client.views.AccountView;
 
 import static memphis.fridge.client.events.AccountEvent.fire;
@@ -30,10 +29,7 @@ public class SessionActivity extends AbstractActivity implements AccountView.Pre
 	private SessionPlace details;
 
 	@Inject
-	Provider<RequestNonce> nonceRequest;
-
-	@Inject
-	Provider<RequestAccountInfo> accountRequest;
+	Provider<AccountRequest> accountRequest;
 
 	@Inject
 	PlaceController pc;
@@ -60,33 +56,18 @@ public class SessionActivity extends AbstractActivity implements AccountView.Pre
 		view.setUsername(details.getUsername());
 		panel.setWidget(view);
 
-		// request a nonce to verify username and password
-		nonceRequest.get().requestNonce(details, new RequestNonce.Handler() {
-			public void onNonceReceived(String nonce) {
-				log.info("login verified");
-				accountRequest.get().requestAccountInfo(details, nonce, new RequestAccountInfo.Handler() {
-					public void onAccountReady(Account account) {
-						view.setDetails(account);
-						fire(eventBus, account);
-					}
-
-					public void onError(Throwable exception) {
-						log.warning("unable to get account details: " + exception.getMessage());
-					}
-				});
+		// request account details to verify username and password
+		accountRequest.get().requestAccountInfo(details, new AccountRequest.Handler() {
+			public void onAccountReady(Account account) {
+				view.setDetails(account);
+				fire(eventBus, account);
 			}
 
 			public void onError(Throwable exception) {
-				log.warning("login verification failed: " + exception.getMessage());
-				later.scheduleDeferred(new Scheduler.ScheduledCommand() {
-					public void execute() {
-						pc.goTo(new LoginPlace(details.getUsername()));
-					}
-				});
+				log.warning("unable to get account details: " + exception.getMessage());
+				logout();
 			}
 		});
-
-
 	}
 
 	public void logout() {

@@ -17,7 +17,6 @@ import memphis.fridge.client.activities.SessionActivityMapper;
 import memphis.fridge.client.activities.UserPanelActivityMapper;
 import memphis.fridge.client.places.FridgePlaceMapper;
 import memphis.fridge.client.places.LoginPlace;
-import memphis.fridge.client.rpc.Session;
 import memphis.fridge.client.utils.CryptUtils;
 import memphis.fridge.client.utils.CryptUtilsImpl;
 import memphis.fridge.client.views.*;
@@ -37,7 +36,6 @@ public class ClientModule extends AbstractGinModule {
 		bind(PurchaseView.class).to(PurchaseWidget.class).asEagerSingleton();
 		bind(CryptUtils.class).to(CryptUtilsImpl.class);
 		bind(FridgeView.class).to(FridgeWidget.class);
-		bind(Session.class).asEagerSingleton();
 	}
 
 	@Provides

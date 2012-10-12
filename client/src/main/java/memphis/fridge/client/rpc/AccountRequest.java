@@ -9,15 +9,15 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
 
-import javax.inject.Inject;
 import memphis.fridge.client.places.SessionPlace;
-import memphis.fridge.client.utils.CryptUtils;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 10/10/12
  */
-public class RequestAccountInfo extends FridgeRequest {
+public class AccountRequest extends FridgeRequest {
+
+	private static final String VERB = "account-request";
 
 	private static final Logger log = Logger.getLogger("account-info");
 
@@ -27,27 +27,21 @@ public class RequestAccountInfo extends FridgeRequest {
 		public void onError(Throwable exception);
 	}
 
-	@Inject
-	CryptUtils crypt;
+	public void requestAccountInfo(SessionPlace details, Handler callback) {
+		init(details);
 
-	public void requestAccountInfo(SessionPlace details, String nonce, Handler callback) {
 		final String message = "{\"username\":\"" + details.getUsername() + "\"}";
 
-		SafeUri uri = url();
-		RequestBuilder builder = initRequest(url(), RequestBuilder.POST, details, nonce, message);
-		builder.setHeader("Content-Type", "application/json");
-		builder.setRequestData(message);
-		builder.setCallback(new Callback(details, nonce, callback));
 		try {
-			builder.send();
+			request(RequestBuilder.POST, url(), VERB, message, new Callback(this, callback)).send();
 		} catch (RequestException ex) {
 			log.warning("error sending request: " + ex.getMessage());
 		}
 	}
 
-	private class Callback extends FridgeRequest.Callback<Handler> {
-		private Callback(SessionPlace details, String nonce, Handler handler) {
-			super(details, nonce, handler, 200);
+	private static class Callback extends FridgeRequest.Callback<Handler> {
+		private Callback(AccountRequest req, Handler handler) {
+			super(req, 200, handler);
 		}
 
 		@Override

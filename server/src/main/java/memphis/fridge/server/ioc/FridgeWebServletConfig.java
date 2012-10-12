@@ -10,7 +10,10 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.protobuf.ExtensionRegistry;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-import memphis.fridge.server.*;
+import memphis.fridge.server.AccountRequest;
+import memphis.fridge.server.OrderRequest;
+import memphis.fridge.server.ProductImages;
+import memphis.fridge.server.ProductsRequest;
 import memphis.fridge.server.io.SignedJsonMessageReader;
 import memphis.fridge.server.io.SignedJsonMessageWriter;
 
@@ -35,7 +38,6 @@ public class FridgeWebServletConfig extends GuiceServletContextListener {
 				bind(SignedJsonMessageWriter.class);
 
 				bind(AccountRequest.class);
-				bind(GenerateNonce.class);
 				bind(ProductsRequest.class);
 				bind(OrderRequest.class);
 				bind(ProductImages.class);

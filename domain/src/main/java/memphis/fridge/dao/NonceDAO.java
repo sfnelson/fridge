@@ -26,8 +26,11 @@ public class NonceDAO {
 
 		expireOldNonces();
 
+		Date expires = Nonce.expires(timestamp);
+		Date now = new Date();
+
 		// check the timestamp
-		if (timestamp.getTime() + Nonce.VALID_PERIOD * 1000 < System.currentTimeMillis()) {
+		if (expires.before(now)) {
 			throw new AuthenticationException("Timestamp too old.");
 		}
 

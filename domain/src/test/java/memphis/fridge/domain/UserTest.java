@@ -3,8 +3,9 @@ package memphis.fridge.domain;
 import javax.inject.Inject;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
-import memphis.fridge.ioc.GuiceTestRunner;
-import memphis.fridge.ioc.TestModule;
+import memphis.fridge.ioc.TestModuleWithValidator;
+import memphis.fridge.test.GuiceTestRunner;
+import memphis.fridge.test.TestModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,9 +16,7 @@ import static memphis.fridge.utils.ValidationUtils.validate;
  * Date: 9/10/12
  */
 @RunWith(GuiceTestRunner.class)
-@GuiceTestRunner.GuiceModules({
-		@GuiceTestRunner.GuiceModule(TestModule.class)
-})
+@TestModule(value = TestModuleWithValidator.class, args = "FridgeTestDB")
 public class UserTest {
 
 	@Inject

@@ -3,12 +3,11 @@ package memphis.fridge.server.services;
 import javax.inject.Inject;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
-import memphis.fridge.exceptions.FridgeException;
 import memphis.fridge.protocol.Messages;
 import memphis.fridge.server.ioc.AuthModule;
-import memphis.fridge.server.ioc.MockInjectingRunner;
 import memphis.fridge.server.ioc.SessionState;
-import org.junit.Before;
+import memphis.fridge.test.*;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -16,42 +15,39 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static memphis.fridge.server.TestingData.*;
 import static memphis.fridge.utils.CurrencyUtils.toCents;
-import static org.easymock.EasyMock.expect;
+import static org.mockito.Mockito.when;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-@RunWith(MockInjectingRunner.class)
-@MockInjectingRunner.ToInject({GetProducts.class})
-@MockInjectingRunner.WithModules({AuthModule.class})
+@RunWith(GuiceTestRunner.class)
+@TestModule(AuthModule.class)
 public class GetProductsTest {
 
 	@Inject
+	@ClassRule
+	public static GuiceMockitoProvider mocks;
+
+	@Inject
+	@InjectMocks
 	GetProducts p;
 
 	@Inject
-	MockInjectingRunner.MockManager m;
-
-	@Inject
-	@MockInjectingRunner.Mock
+	@Mock
 	User u;
 
-	@MockInjectingRunner.Mock
+	@Mock
 	SessionState s;
-
-	@Before
-	public void setUp() throws Exception {
-		m.reset();
-	}
 
 	@Test
 	public void testGetProductsNoUser() throws Exception {
-		expect(p.fridge.getGraduateDiscount()).andReturn(GRAD_TAX);
-		expect(p.products.getEnabledProducts()).andReturn(products());
+		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
+		when(p.products.getEnabledProducts()).thenReturn(products());
 
-		Messages.StockResponse r = test(null);
+		Messages.StockResponse r = p.getProducts(null);
 
+		assertNotNull(r);
 		assertEquals(2, r.getStockCount());
 		checkCoke(r.getStock(0), false);
 		checkCookie(r.getStock(1), false);
@@ -59,13 +55,14 @@ public class GetProductsTest {
 
 	@Test
 	public void testGetProductsGrad() throws Exception {
-		expect(p.fridge.getGraduateDiscount()).andReturn(GRAD_TAX);
-		expect(p.products.getEnabledProducts()).andReturn(products());
-		expect(p.users.retrieveUser(USERNAME)).andReturn(u);
-		expect(u.isGrad()).andReturn(true);
+		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
+		when(p.products.getEnabledProducts()).thenReturn(products());
+		when(p.users.retrieveUser(USERNAME)).thenReturn(u);
+		when(u.isGrad()).thenReturn(true);
 
-		Messages.StockResponse r = test(USERNAME);
+		Messages.StockResponse r = p.getProducts(USERNAME);
 
+		assertNotNull(r);
 		assertEquals(2, r.getStockCount());
 		checkCoke(r.getStock(0), true);
 		checkCookie(r.getStock(1), true);
@@ -73,30 +70,17 @@ public class GetProductsTest {
 
 	@Test
 	public void testGetProductsUGrad() throws Exception {
-		expect(p.fridge.getGraduateDiscount()).andReturn(GRAD_TAX);
-		expect(p.products.getEnabledProducts()).andReturn(products());
-		expect(p.users.retrieveUser(USERNAME)).andReturn(u);
-		expect(u.isGrad()).andReturn(false);
+		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
+		when(p.products.getEnabledProducts()).thenReturn(products());
+		when(p.users.retrieveUser(USERNAME)).thenReturn(u);
+		when(u.isGrad()).thenReturn(false);
 
-		Messages.StockResponse r = test(USERNAME);
+		Messages.StockResponse r = p.getProducts(USERNAME);
 
+		assertNotNull(r);
 		assertEquals(2, r.getStockCount());
 		checkCoke(r.getStock(0), false);
 		checkCookie(r.getStock(1), false);
-	}
-
-	private Messages.StockResponse test(String username) {
-		Messages.StockResponse r;
-		m.replay();
-		try {
-			r = p.getProducts(username);
-			assertNotNull(r);
-		} catch (FridgeException ex) {
-			m.verify();
-			throw ex;
-		}
-		m.verify();
-		return r;
 	}
 
 	private void checkCoke(Messages.StockResponse.Stock item, boolean isGrad) {

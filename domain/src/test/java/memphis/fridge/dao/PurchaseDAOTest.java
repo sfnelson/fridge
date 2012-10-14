@@ -4,17 +4,17 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import memphis.fridge.data.Users;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.Purchase;
 import memphis.fridge.domain.User;
-import memphis.fridge.ioc.GuiceJPATestRunner;
-import memphis.fridge.ioc.GuiceTestRunner;
-import memphis.fridge.ioc.TestModule;
+import memphis.fridge.ioc.TestModuleWithValidator;
+import memphis.fridge.test.GuiceJPATest;
+import memphis.fridge.test.TestModule;
+import memphis.fridge.test.persistence.WithTestData;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -22,41 +22,37 @@ import static junit.framework.Assert.assertEquals;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 9/10/12
  */
-@RunWith(GuiceJPATestRunner.class)
-@GuiceTestRunner.GuiceModules({
-		@GuiceTestRunner.GuiceModule(TestModule.class)
-})
-public class PurchaseDAOTest {
+@TestModule(value = TestModuleWithValidator.class, args = "FridgeTestDB")
+public class PurchaseDAOTest extends GuiceJPATest {
 
 	@Inject
-	Provider<PurchaseDAO> purchase;
+	PurchaseDAO purchase;
 
 	@Inject
-	Provider<UserDAO> users;
+	UserDAO users;
 
 	@Inject
-	Provider<ProductsDAO> products;
+	ProductsDAO products;
 
 	@Inject
 	Validator validator;
 
 	@Test
-	@GuiceJPATestRunner.Rollback
 	public void testCreatePurchaseNoUser() throws Exception {
 		User user = null;
-		Product product = products.get().findProduct("CC");
-		Purchase p = purchase.get().createPurchase(user, product, 1, BigDecimal.ONE, BigDecimal.ONE);
+		Product product = products.findProduct("CC");
+		Purchase p = purchase.createPurchase(user, product, 1, BigDecimal.ONE, BigDecimal.ONE);
 
 		Set<ConstraintViolation<Purchase>> violations = validator.validate(p);
 		assertEquals(violations.toString(), 0, violations.size());
 	}
 
 	@Test
-	@GuiceJPATestRunner.Rollback
+	@WithTestData(Users.Graduate.class)
 	public void testCreatePurchase() throws Exception {
-		User user = users.get().retrieveUser("stephen");
-		Product product = products.get().findProduct("CC");
-		Purchase p = purchase.get().createPurchase(user, product, 1, BigDecimal.ONE, BigDecimal.ONE);
+		User user = users.retrieveUser(Users.Graduate.NAME);
+		Product product = products.findProduct("CC");
+		Purchase p = purchase.createPurchase(user, product, 1, BigDecimal.ONE, BigDecimal.ONE);
 
 		Set<ConstraintViolation<Purchase>> violations = validator.validate(p);
 		assertEquals(violations.toString(), 0, violations.size());

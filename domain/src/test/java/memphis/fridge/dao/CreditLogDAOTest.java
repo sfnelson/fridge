@@ -2,15 +2,14 @@ package memphis.fridge.dao;
 
 import java.math.BigDecimal;
 
+import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.validation.Validator;
+import memphis.fridge.data.Users;
 import memphis.fridge.domain.User;
-import memphis.fridge.ioc.GuiceJPATestRunner;
-import memphis.fridge.ioc.GuiceTestRunner;
-import memphis.fridge.ioc.TestModule;
+import memphis.fridge.test.GuiceJPATest;
+import memphis.fridge.test.TestModule;
+import memphis.fridge.test.persistence.WithTestData;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static memphis.fridge.utils.CurrencyUtils.fromCents;
 
@@ -18,28 +17,20 @@ import static memphis.fridge.utils.CurrencyUtils.fromCents;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 9/10/12
  */
-@RunWith(GuiceJPATestRunner.class)
-@GuiceTestRunner.GuiceModules({
-		@GuiceTestRunner.GuiceModule(TestModule.class)
-})
-public class CreditLogDAOTest {
-	@Inject
-	Provider<CreditLogDAO> creditLog;
+@TestModule(value = JpaPersistModule.class, args = "FridgeTestDB")
+public class CreditLogDAOTest extends GuiceJPATest {
 
 	@Inject
-	Provider<UserDAO> users;
+	CreditLogDAO creditLog;
 
 	@Inject
-	Provider<ProductsDAO> products;
-
-	@Inject
-	Validator validator;
+	UserDAO users;
 
 	@Test
-	@GuiceJPATestRunner.Rollback
+	@WithTestData(Users.Graduate.class)
 	public void testCreatePurchase() throws Exception {
-		User user = null;
+		User user = users.retrieveUser(Users.Graduate.NAME);
 		BigDecimal amount = fromCents(100);
-		creditLog.get().createPurchase(user, amount);
+		creditLog.createPurchase(user, amount);
 	}
 }

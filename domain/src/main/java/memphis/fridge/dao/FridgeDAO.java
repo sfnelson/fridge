@@ -3,6 +3,7 @@ package memphis.fridge.dao;
 import java.math.BigDecimal;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
@@ -13,24 +14,24 @@ import javax.persistence.Query;
 public class FridgeDAO {
 
 	@Inject
-	EntityManager em;
+	Provider<EntityManager> em;
 
 	public BigDecimal getGraduateDiscount() {
-		Query q = em.createNativeQuery("SELECT value FROM numerical_variables WHERE variable = 'graduate_discount'");
+		Query q = em.get().createNativeQuery("SELECT value FROM numerical_variables WHERE variable = 'graduate_discount'");
 		BigDecimal result = (BigDecimal) q.getSingleResult();
 		result = result.setScale(1);
 		return result;
 	}
 
 	public BigDecimal getMinimumUserBalance() {
-		Query q = em.createNativeQuery("SELECT value FROM numerical_variables WHERE variable = 'minimum_user_balance'");
+		Query q = em.get().createNativeQuery("SELECT value FROM numerical_variables WHERE variable = 'minimum_user_balance'");
 		BigDecimal result = (BigDecimal) q.getSingleResult();
 		result = result.setScale(2);
 		return result;
 	}
 
 	public BigDecimal getMinimumAdministratorBalance() {
-		Query q = em.createNativeQuery("SELECT value FROM numerical_variables WHERE variable = 'minimum_administrator_balance'");
+		Query q = em.get().createNativeQuery("SELECT value FROM numerical_variables WHERE variable = 'minimum_administrator_balance'");
 		BigDecimal result = (BigDecimal) q.getSingleResult();
 		result = result.setScale(2);
 		return result;

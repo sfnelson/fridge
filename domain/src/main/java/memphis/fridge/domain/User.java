@@ -82,6 +82,23 @@ public class User {
 		this.balance = BigDecimal.ZERO;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof User)) return false;
+
+		User user = (User) o;
+
+		if (!username.equals(user.username)) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return username == null ? 0 : username.hashCode();
+	}
+
 	public String getUsername() {
 		return username;
 	}

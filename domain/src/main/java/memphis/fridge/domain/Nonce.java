@@ -20,7 +20,11 @@ import javax.validation.constraints.Size;
 })
 public class Nonce {
 
-	public static final int VALID_PERIOD = 600; // 10 minutes
+	public static final long VALID_PERIOD = 600; // 10 minutes
+
+	public static Date expires(Date created) {
+		return new Date(VALID_PERIOD * 1000 + created.getTime());
+	}
 
 	@Embeddable
 	protected static class NonceId implements Serializable {

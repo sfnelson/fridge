@@ -2,14 +2,12 @@
 <persistence xmlns="http://java.sun.com/xml/ns/persistence"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
-        http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd" version="1.0">
+        http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd" version="2.0">
 
-    <!-- JPA Persistence Unit for Fridge -->
-    <persistence-unit name="FridgeDB" transaction-type="RESOURCE_LOCAL">
+    <!-- JPA Persistence Unit for Testing -->
+    <persistence-unit name="FridgeTestDB" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
 
-        <!-- JPA entities must be registered here -->
-        <!--
         <class>memphis.fridge.domain.CreditLogEntry</class>
         <class>memphis.fridge.domain.Nonce</class>
         <class>memphis.fridge.domain.Product</class>
@@ -17,11 +15,13 @@
         <class>memphis.fridge.domain.ProductImage</class>
         <class>memphis.fridge.domain.Purchase</class>
         <class>memphis.fridge.domain.User</class>
-        -->
+        <class>memphis.fridge.domain.NumericalVariable</class>
 
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge-test"/>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="javax.persistence.validation.mode" value=""/>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <!--<property name="hibernate.show_sql" value="true"/>-->
         </properties>
     </persistence-unit>

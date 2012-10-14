@@ -2,36 +2,48 @@ package memphis.fridge.dao;
 
 import java.math.BigDecimal;
 
+import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
-import javax.inject.Provider;
-import memphis.fridge.ioc.GuiceJPATestRunner;
-import memphis.fridge.ioc.GuiceTestRunner;
-import memphis.fridge.ioc.TestModule;
+import memphis.fridge.data.FridgeVariables;
+import memphis.fridge.test.GuiceJPATest;
+import memphis.fridge.test.TestModule;
+import memphis.fridge.test.persistence.WithTestData;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static memphis.fridge.utils.CurrencyUtils.fromCents;
 import static memphis.fridge.utils.CurrencyUtils.fromPercent;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-@RunWith(GuiceJPATestRunner.class)
-@GuiceTestRunner.GuiceModules({
-		@GuiceTestRunner.GuiceModule(TestModule.class)
-})
-public class FridgeDAOTest {
+@TestModule(value = JpaPersistModule.class, args = "FridgeTestDB")
+@WithTestData(FridgeVariables.class)
+public class FridgeDAOTest extends GuiceJPATest {
 
 	@Inject
-	Provider<FridgeDAO> fridge;
+	FridgeDAO fridge;
 
 	@Test
-	@GuiceJPATestRunner.Rollback
-	public void testGetGraduateDiscount() throws Exception {
-		BigDecimal tax = fridge.get().getGraduateDiscount();
+	public void testGetMinimumUserBalance() throws Exception {
+		BigDecimal tax = fridge.getMinimumUserBalance();
 		assertNotNull(tax);
-		assertEquals(fromPercent(10), tax);
+		assertEquals(fromCents(-500), tax);
+	}
+
+	@Test
+	public void testGetGraduateDiscount() throws Exception {
+		BigDecimal tax = fridge.getGraduateDiscount();
+		assertNotNull(tax);
+		assertEquals(fromPercent(50), tax);
+	}
+
+	@Test
+	public void testGetMinimumAdministratorBalance() throws Exception {
+		BigDecimal tax = fridge.getMinimumAdministratorBalance();
+		assertNotNull(tax);
+		assertEquals(fromCents(-5000), tax);
 	}
 }

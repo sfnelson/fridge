@@ -2,15 +2,16 @@ package memphis.fridge.dao;
 
 import java.util.List;
 
+import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import memphis.fridge.data.Products;
 import memphis.fridge.domain.Product;
 import memphis.fridge.exceptions.InsufficientStockException;
-import memphis.fridge.ioc.GuiceJPATestRunner;
-import memphis.fridge.ioc.GuiceTestRunner;
-import memphis.fridge.ioc.TestModule;
+import memphis.fridge.test.GuiceJPATest;
+import memphis.fridge.test.TestModule;
+import memphis.fridge.test.persistence.WithTestData;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.*;
 
@@ -18,17 +19,14 @@ import static junit.framework.Assert.*;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-@RunWith(GuiceJPATestRunner.class)
-@GuiceTestRunner.GuiceModules({
-		@GuiceTestRunner.GuiceModule(TestModule.class)
-})
-public class ProductsDAOTest {
+@TestModule(value = JpaPersistModule.class, args = "FridgeTestDB")
+@WithTestData(Products.class)
+public class ProductsDAOTest extends GuiceJPATest {
 
 	@Inject
 	Provider<ProductsDAO> products;
 
 	@Test
-	@GuiceJPATestRunner.Rollback
 	public void testFindProduct() throws Exception {
 		Product coke = products.get().findProduct("CC");
 		assertNotNull(coke);
@@ -40,23 +38,21 @@ public class ProductsDAOTest {
 		assertEquals(1, coke.getCategory().getDisplaySequence());
 	}
 
-	@GuiceJPATestRunner.Rollback
+	@Test
 	public void testFindProductNotPresent() throws Exception {
 		Product nan = products.get().findProduct("NaN");
 		assertNull(nan);
 	}
 
 	@Test
-	@GuiceJPATestRunner.Rollback
 	public void testConsumeProduct() throws Exception {
 		Product coke = products.get().findProduct("CC");
 		int stock = coke.getInStock();
-		products.get().consumeProduct(coke, 2);
-		assertEquals(stock - 2, products.get().findProduct("CC").getInStock());
+		products.get().consumeProduct(coke, 20);
+		assertEquals(stock - 20, products.get().findProduct("CC").getInStock());
 	}
 
 	@Test(expected = InsufficientStockException.class)
-	@GuiceJPATestRunner.Rollback
 	public void testConsumeProductTooLittleStock() throws Exception {
 		Product coke = products.get().findProduct("CC");
 		int stock = coke.getInStock();
@@ -64,7 +60,6 @@ public class ProductsDAOTest {
 	}
 
 	@Test(expected = InsufficientStockException.class)
-	@GuiceJPATestRunner.Rollback
 	public void testConsumeProductTooLittleStock2() throws Exception {
 		Product coke = products.get().findProduct("CC");
 		products.get().consumeProduct(coke, 20);
@@ -72,10 +67,9 @@ public class ProductsDAOTest {
 	}
 
 	@Test
-	@GuiceJPATestRunner.Rollback
 	public void testGetEnabledProducts() throws Exception {
 		List<Product> enabled = products.get().getEnabledProducts();
 		assertNotNull(enabled);
-		assertEquals(4, enabled.size());
+		assertEquals(2, enabled.size());
 	}
 }

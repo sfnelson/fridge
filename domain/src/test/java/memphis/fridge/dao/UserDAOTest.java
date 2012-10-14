@@ -1,107 +1,135 @@
 package memphis.fridge.dao;
 
+import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
-import javax.inject.Provider;
+import javax.persistence.EntityManager;
+import memphis.fridge.data.FridgeVariables;
+import memphis.fridge.data.Users;
+import memphis.fridge.data.Users.Admin;
+import memphis.fridge.data.Users.CreateThreeUsers;
+import memphis.fridge.data.Users.Graduate;
+import memphis.fridge.data.Users.Undergrad;
 import memphis.fridge.domain.User;
-import memphis.fridge.ioc.GuiceJPATestRunner;
-import memphis.fridge.ioc.GuiceTestRunner;
-import memphis.fridge.ioc.TestModule;
+import memphis.fridge.exceptions.InsufficientFundsException;
+import memphis.fridge.exceptions.InvalidUserException;
+import memphis.fridge.test.GuiceJPATest;
+import memphis.fridge.test.TestModule;
+import memphis.fridge.test.persistence.WithTestData;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.mockito.Mock;
 
+import static memphis.fridge.data.Users.assertUsersEquals;
 import static memphis.fridge.utils.CryptUtils.md5;
-import static org.junit.Assert.*;
+import static memphis.fridge.utils.CurrencyUtils.fromCents;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 29/09/12
  */
-@RunWith(GuiceJPATestRunner.class)
-@GuiceTestRunner.GuiceModules({
-		@GuiceTestRunner.GuiceModule(TestModule.class)
-})
-public class UserDAOTest {
+@TestModule(value = JpaPersistModule.class, args = "FridgeTestDB")
+@WithTestData(FridgeVariables.class)
+public class UserDAOTest extends GuiceJPATest {
 
 	@Inject
-	Provider<UserDAO> users;
+	UserDAO users;
+
+	@Inject
+	EntityManager em;
+
+	@Inject
+	@Mock
+	FridgeDAO fridge;
+
+	@Test(expected = InvalidUserException.class)
+	public void testCheckInvalidUser() throws Exception {
+		users.checkValidUser(Graduate.NAME);
+	}
 
 	@Test
-	@GuiceJPATestRunner.Rollback
+	@WithTestData(Graduate.class)
+	public void testCheckValidUser() throws Exception {
+		users.checkValidUser(Graduate.NAME);
+	}
+
+	@Test(expected = InvalidUserException.class)
+	public void testRetrievingInvalidUser() throws Exception {
+		users.retrieveUser(Graduate.NAME);
+	}
+
+	@Test
+	@WithTestData(CreateThreeUsers.class)
+	public void testRetrievingUsers() throws Exception {
+		assertEquals(Graduate.create(), users.retrieveUser(Graduate.NAME));
+		assertEquals(Undergrad.create(), users.retrieveUser(Undergrad.NAME));
+		assertEquals(Admin.create(), users.retrieveUser(Admin.NAME));
+	}
+
+	@Test
 	public void testCreateGraduateUser() throws Exception {
-		User e = createFooUser();
-		e.setGrad(true);
-		e.setSponsor(null);
+		User grad = Graduate.create();
 
-		createGraduateUser(e);
-		User a = users.get().retrieveUser(e.getUsername());
+		users.createGraduateUser(Graduate.NAME, md5(Graduate.PASS), Graduate.REAL, Graduate.EMAIL);
 
-		assertUsersEquals(e, a);
+		User result = users.retrieveUser(grad.getUsername());
+
+		assertEquals(grad, result);
+
+		users.addFunds(grad, fromCents(500));
+
+		assertUsersEquals(grad, result);
 	}
 
 	@Test
-	@GuiceJPATestRunner.Rollback
+	@WithTestData(Users.CreateThreeUsers.class)
+	public void testCheckSufficientBalance() throws Exception {
+		users.checkSufficientBalance(Graduate.NAME, fromCents(800));
+	}
+
+	@Test(expected = InsufficientFundsException.class)
+	@WithTestData(Users.CreateThreeUsers.class)
+	public void testCheckInsufficientBalance() throws Exception {
+		users.checkSufficientBalance(Graduate.NAME, fromCents(1200));
+	}
+
+	@Test(expected = InvalidUserException.class)
+	public void testCreateDuplicateUser() throws Exception {
+		users.createGraduateUser(Graduate.NAME, md5(Graduate.PASS), Graduate.REAL, Graduate.EMAIL);
+		users.createGraduateUser(Graduate.NAME, md5(Undergrad.PASS), Undergrad.REAL, Undergrad.EMAIL);
+	}
+
+	@Test
+	@WithTestData(Users.CreateThreeUsers.class)
 	public void testSigning() throws Exception {
-		String cnonce = "5343a3ce73gi79bf437e";
+		User grad = Graduate.create();
+		String nonce = "5343a3ce73gi79bf437e";
 		int timestamp = 1348922421;
-		String username = "foo";
-		String hmac = "6272b3ac2866224a3058d051d56e130a";
+		String signature = "9ea5dcc062e487a5b301527c45687b39";
 
-		User e = createFooUser();
-		createGraduateUser(e);
+		String result = users.createHMAC(grad.getUsername(), nonce, timestamp, grad.getUsername());
 
-		String result = users.get().createHMAC(e.getUsername(), cnonce, timestamp, username);
-
-		assertEquals(hmac, result);
+		assertEquals(signature, result);
 	}
 
 	@Test
-	@GuiceJPATestRunner.Rollback
+	@WithTestData(Users.CreateThreeUsers.class)
 	public void testGetPassword() throws Exception {
-		User e = createFooUser();
-		createGraduateUser(e);
+		User grad = Graduate.create();
 
-		String password = users.get().getPassword("foo");
+		String password = users.getPassword(grad.getUsername());
 
-		assertEquals(e.getPassword(), password);
+		assertEquals(grad.getPassword(), password);
 	}
 
 	@Test
-	@GuiceJPATestRunner.Rollback
+	@WithTestData(Users.CreateThreeUsers.class)
 	public void testVerifying() throws Exception {
-		String cnonce = "voXalsPUZ3FpZl9XhV5q";
-		int time = 1349523138;
-		String user = "stephen";
-		String hmac = "0296f2cd2af974f701b8577a651b6314";
+		User grad = Graduate.create();
+		String nonce = "5343a3ce73gi79bf437e";
+		int timestamp = 1348922421;
+		String signature = "9ea5dcc062e487a5b301527c45687b39";
 
-		assertEquals(hmac, users.get().createHMAC(user, cnonce, time, user));
-		users.get().validateHMAC(user, hmac, cnonce, time, user);
-	}
-
-	private User createFooUser() throws Exception {
-		User foo = new User("foo", md5("password"), "Foo Bar", "foo@email.com");
-		foo.setGrad(true);
-		return foo;
-	}
-
-	private void createGraduateUser(User e) {
-		users.get().createGraduateUser(e.getUsername(), e.getPassword(), e.getRealName(), e.getEmail());
-	}
-
-	private void assertUsersEquals(User expected, User actual) {
-		assertNotSame(expected, actual);
-		assertNotNull(actual);
-		assertEquals(expected.getUsername(), actual.getUsername());
-		assertEquals(expected.getPassword(), actual.getPassword());
-		assertEquals(expected.getRealName(), actual.getRealName());
-		assertEquals(expected.getEmail(), actual.getEmail());
-		assertEquals(expected.getBalance(), actual.getBalance());
-		assertEquals(expected.isAdmin(), actual.isAdmin());
-		assertEquals(expected.isGrad(), actual.isGrad());
-		assertEquals(expected.getSponsor(), actual.getSponsor());
-		assertEquals(expected.isEnabled(), actual.isEnabled());
-		assertEquals(expected.isInterfridge(), actual.isInterfridge());
-		assertEquals(expected.getInterfridgePassword(), actual.getInterfridgePassword());
-		assertEquals(expected.getInterfridgeEndpoint(), actual.getInterfridgeEndpoint());
-		assertEquals(expected.getFridgeServerEndpoint(), actual.getFridgeServerEndpoint());
+		assertEquals(signature, users.createHMAC(grad.getUsername(), nonce, timestamp, Graduate.NAME));
+		users.validateHMAC(grad.getUsername(), signature, nonce, timestamp, Graduate.NAME);
 	}
 }

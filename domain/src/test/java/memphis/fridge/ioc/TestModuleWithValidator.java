@@ -12,10 +12,17 @@ import javax.validation.ValidatorFactory;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 29/09/12
  */
-public class TestModule extends AbstractModule {
+public class TestModuleWithValidator extends AbstractModule {
+
+	private final String jpaModule;
+
+	public TestModuleWithValidator(String jpaModule) {
+		this.jpaModule = jpaModule;
+	}
+
 	@Override
 	protected void configure() {
-		install(new JpaPersistModule("TestFridgeDB"));
+		install(new JpaPersistModule(jpaModule));
 	}
 
 	@Provides

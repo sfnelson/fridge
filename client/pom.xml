@@ -68,7 +68,7 @@
                 </executions>
                 <configuration>
                     <webappDirectory>${project.build.directory}/gwtOutput</webappDirectory>
-		    <extraJvmArgs>-XX:MaxPermSize=512m -Xmx1024m</extraJvmArgs>
+                    <extraJvmArgs>-XX:MaxPermSize=512m -Xmx1024m</extraJvmArgs>
                 </configuration>
             </plugin>
 

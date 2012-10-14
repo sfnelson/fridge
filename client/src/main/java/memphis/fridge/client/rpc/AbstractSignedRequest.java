@@ -14,7 +14,7 @@ import memphis.fridge.client.utils.CryptUtils;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 12/10/12
  */
-public abstract class FridgeRequest {
+abstract class AbstractSignedRequest {
 
 	public static final String CONTENT_TYPE = "Content-Type";
 	public static final String APPLICATION_JSON = "application/json";
@@ -73,12 +73,12 @@ public abstract class FridgeRequest {
 		}
 	}
 
-	protected static abstract class Callback<H> implements RequestCallback {
-		protected final FridgeRequest req;
+	static abstract class Callback<H> implements RequestCallback {
+		protected final AbstractSignedRequest req;
 		protected final H handler;
 		protected final int success;
 
-		protected Callback(FridgeRequest req, int success, H handler) {
+		protected Callback(AbstractSignedRequest req, int success, H handler) {
 			this.req = req;
 			this.handler = handler;
 			this.success = success;

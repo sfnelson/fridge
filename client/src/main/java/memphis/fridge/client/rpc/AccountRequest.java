@@ -15,7 +15,7 @@ import memphis.fridge.client.places.SessionPlace;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 10/10/12
  */
-public class AccountRequest extends FridgeRequest {
+public class AccountRequest extends AbstractSignedRequest {
 
 	private static final String VERB = "account-request";
 
@@ -39,7 +39,7 @@ public class AccountRequest extends FridgeRequest {
 		}
 	}
 
-	private static class Callback extends FridgeRequest.Callback<Handler> {
+	private static class Callback extends AbstractSignedRequest.Callback<Handler> {
 		private Callback(AccountRequest req, Handler handler) {
 			super(req, 200, handler);
 		}

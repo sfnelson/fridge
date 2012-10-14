@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import memphis.fridge.client.events.ProductEvent;
 import memphis.fridge.client.rpc.Product;
-import memphis.fridge.client.rpc.RequestProducts;
+import memphis.fridge.client.rpc.ProductRequest;
 import memphis.fridge.client.views.ProductView;
 
 /**
@@ -26,7 +26,7 @@ public class ShowProductListActivity extends AbstractActivity implements Product
 	ProductView view;
 
 	@Inject
-	Provider<RequestProducts> req;
+	Provider<ProductRequest> req;
 
 	@Inject
 	EventBus eventBus;
@@ -35,7 +35,7 @@ public class ShowProductListActivity extends AbstractActivity implements Product
 		view.setPresenter(this);
 		panel.setWidget(view);
 
-		req.get().requestProducts(null, new RequestProducts.Handler() {
+		req.get().requestProducts(null, new ProductRequest.Handler() {
 			public void productsReady(List<? extends Product> products) {
 				view.setProducts(products);
 			}

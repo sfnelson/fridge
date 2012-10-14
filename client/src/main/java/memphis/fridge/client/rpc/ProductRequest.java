@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-public class RequestProducts extends FridgeRequest {
+public class ProductRequest extends AbstractSignedRequest {
 
 	private static final Logger log = Logger.getLogger("products");
 

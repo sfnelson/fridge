@@ -17,7 +17,7 @@ import memphis.fridge.client.places.SessionPlace;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 8/10/12
  */
-public class RequestPurchase extends FridgeRequest {
+public class PurchaseRequest extends AbstractSignedRequest {
 	private static final Logger log = Logger.getLogger("RequestNonce");
 
 	private static final String VERB = "purchase-request";
@@ -44,8 +44,8 @@ public class RequestPurchase extends FridgeRequest {
 		}
 	}
 
-	private static class Callback extends FridgeRequest.Callback<Handler> {
-		private Callback(RequestPurchase req, Handler handler) {
+	private static class Callback extends AbstractSignedRequest.Callback<Handler> {
+		private Callback(PurchaseRequest req, Handler handler) {
 			super(req, 200, handler);
 		}
 

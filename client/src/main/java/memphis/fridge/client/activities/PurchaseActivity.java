@@ -38,10 +38,10 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	PurchaseView view;
 
 	@Inject
-	Provider<RequestProducts> productsRequest;
+	Provider<ProductRequest> productsRequest;
 
 	@Inject
-	Provider<RequestPurchase> purchase;
+	Provider<PurchaseRequest> purchase;
 
 	@Inject
 	PlaceController pc;
@@ -116,7 +116,7 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 		}
 		boolean confirm = Window.confirm("Your account will be charged " + printCurrency(total).asString());
 		if (confirm) {
-			purchase.get().requestOrder(details, content, new RequestPurchase.Handler() {
+			purchase.get().requestOrder(details, content, new PurchaseRequest.Handler() {
 				public void onOrderProcessed(int balance, int orderTotal) {
 					order.clear();
 					Window.alert("Success! Your balance is now " + printCurrency(balance).asString());
@@ -162,7 +162,7 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 
 	private void refreshProducts() {
 		products = null;
-		productsRequest.get().requestProducts(details.getUsername(), new RequestProducts.Handler() {
+		productsRequest.get().requestProducts(details.getUsername(), new ProductRequest.Handler() {
 			public void productsReady(List<? extends Product> incoming) {
 				products = Maps.newHashMap();
 				for (Product p : incoming) {

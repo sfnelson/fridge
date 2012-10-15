@@ -41,6 +41,7 @@ public abstract class GuiceMockProvider extends ExternalResource {
 
 	protected abstract <T> T createMock(final Class<T> type);
 
+    @SuppressWarnings("unchecked")
 	public <T> T getMock(Class<T> type) {
 		if (!mocks.containsKey(type)) {
 			log.finest("created mock: " + type.getSimpleName());

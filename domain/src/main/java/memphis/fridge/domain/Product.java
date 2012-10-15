@@ -137,28 +137,11 @@ public class Product implements Serializable {
 
 		Product product = (Product) o;
 
-		if (enabled != product.enabled) return false;
-		if (inStock != product.inStock) return false;
-		if (stockLowMark != product.stockLowMark) return false;
-		if (!category.equals(product.category)) return false;
-		if (!cost.equals(product.cost)) return false;
-		if (!description.equals(product.description)) return false;
-		if (!markup.equals(product.markup)) return false;
-		if (!productCode.equals(product.productCode)) return false;
-
-		return true;
+		return productCode.equals(product.productCode);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = productCode.hashCode();
-		result = 31 * result + description.hashCode();
-		result = 31 * result + cost.hashCode();
-		result = 31 * result + markup.hashCode();
-		result = 31 * result + (enabled ? 1 : 0);
-		result = 31 * result + category.hashCode();
-		result = 31 * result + inStock;
-		result = 31 * result + stockLowMark;
-		return result;
+		return productCode.hashCode();
 	}
 }

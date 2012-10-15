@@ -3,8 +3,10 @@ package memphis.fridge.test;
 import javax.inject.Inject;
 import memphis.fridge.test.persistence.GuiceJPAResource;
 import memphis.fridge.test.persistence.GuiceJPATestWatcher;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -12,7 +14,7 @@ import org.junit.runner.RunWith;
  * Date: 14/10/12
  */
 @RunWith(GuiceTestRunner.class)
-public class GuiceJPATest {
+public abstract class GuiceJPATest {
 
 	@ClassRule
 	@Inject

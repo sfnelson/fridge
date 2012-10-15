@@ -6,7 +6,7 @@ import memphis.fridge.domain.Product;
 import memphis.fridge.exceptions.InvalidAmountException;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>

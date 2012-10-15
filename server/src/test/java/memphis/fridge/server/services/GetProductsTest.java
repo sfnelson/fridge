@@ -1,7 +1,8 @@
 package memphis.fridge.server.services;
 
 import javax.inject.Inject;
-import memphis.fridge.domain.Product;
+
+import com.google.common.collect.Lists;
 import memphis.fridge.domain.User;
 import memphis.fridge.protocol.Messages;
 import memphis.fridge.server.ioc.AuthModule;
@@ -11,8 +12,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static memphis.fridge.server.TestingData.*;
 import static memphis.fridge.utils.CurrencyUtils.toCents;
 import static org.mockito.Mockito.when;
@@ -43,7 +44,7 @@ public class GetProductsTest {
 	@Test
 	public void testGetProductsNoUser() throws Exception {
 		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
-		when(p.products.getEnabledProducts()).thenReturn(products());
+		when(p.products.getEnabledProducts()).thenReturn(Lists.newArrayList(Coke.create(), Cookie.create()));
 
 		Messages.StockResponse r = p.getProducts(null);
 
@@ -56,7 +57,7 @@ public class GetProductsTest {
 	@Test
 	public void testGetProductsGrad() throws Exception {
 		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
-		when(p.products.getEnabledProducts()).thenReturn(products());
+		when(p.products.getEnabledProducts()).thenReturn(Lists.newArrayList(Coke.create(), Cookie.create()));
 		when(p.users.retrieveUser(USERNAME)).thenReturn(u);
 		when(u.isGrad()).thenReturn(true);
 
@@ -71,7 +72,7 @@ public class GetProductsTest {
 	@Test
 	public void testGetProductsUGrad() throws Exception {
 		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
-		when(p.products.getEnabledProducts()).thenReturn(products());
+		when(p.products.getEnabledProducts()).thenReturn(Lists.newArrayList(Coke.create(), Cookie.create()));
 		when(p.users.retrieveUser(USERNAME)).thenReturn(u);
 		when(u.isGrad()).thenReturn(false);
 
@@ -84,22 +85,20 @@ public class GetProductsTest {
 	}
 
 	private void checkCoke(Messages.StockResponse.Stock item, boolean isGrad) {
-		Product coke = coke();
-		assertEquals(coke.getProductCode(), item.getProductCode());
-		assertEquals(coke.getDescription(), item.getDescription());
-		assertEquals(coke.getInStock(), item.getInStock());
-		assertEquals(toCents(cokeTotal(isGrad)), item.getPrice());
-		assertEquals(coke.getCategory().getTitle(), item.getCategory());
-		assertEquals(coke.getCategory().getDisplaySequence(), item.getCategoryOrder());
+		assertEquals(Coke.CODE, item.getProductCode());
+		assertEquals(Coke.DESC, item.getDescription());
+		assertEquals(Coke.STOCK, item.getInStock());
+		assertEquals(toCents(Coke.total(isGrad)), item.getPrice());
+		assertEquals(Drinks.TITLE, item.getCategory());
+		assertEquals(Drinks.ORDER, item.getCategoryOrder());
 	}
 
 	private void checkCookie(Messages.StockResponse.Stock item, boolean isGrad) {
-		Product cookie = cookie();
-		assertEquals(cookie.getProductCode(), item.getProductCode());
-		assertEquals(cookie.getDescription(), item.getDescription());
-		assertEquals(cookie.getInStock(), item.getInStock());
-		assertEquals(toCents(cookieTotal(isGrad)), item.getPrice());
-		assertEquals(cookie.getCategory().getTitle(), item.getCategory());
-		assertEquals(cookie.getCategory().getDisplaySequence(), item.getCategoryOrder());
+        assertEquals(Cookie.CODE, item.getProductCode());
+        assertEquals(Cookie.DESC, item.getDescription());
+        assertEquals(Cookie.STOCK, item.getInStock());
+        assertEquals(toCents(Cookie.total(isGrad)), item.getPrice());
+        assertEquals(Snacks.TITLE, item.getCategory());
+        assertEquals(Snacks.ORDER, item.getCategoryOrder());
 	}
 }

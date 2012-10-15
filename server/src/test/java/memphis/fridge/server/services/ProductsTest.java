@@ -1,185 +1,154 @@
 package memphis.fridge.server.services;
 
 import javax.inject.Inject;
+
+import memphis.fridge.dao.ProductCategoryDAO;
+import memphis.fridge.dao.ProductsDAO;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.*;
 import memphis.fridge.server.ioc.AuthModule;
-import memphis.fridge.server.ioc.MockInjectingRunner;
 import memphis.fridge.server.ioc.SessionState;
-import memphis.fridge.utils.CurrencyUtils;
+import memphis.fridge.test.*;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 
 import static memphis.fridge.server.TestingData.*;
 import static memphis.fridge.utils.CurrencyUtils.toCents;
 import static memphis.fridge.utils.CurrencyUtils.toPercent;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockInjectingRunner.class)
-@MockInjectingRunner.ToInject(Products.class)
-@MockInjectingRunner.WithModules({AuthModule.class})
+@RunWith(GuiceTestRunner.class)
+@TestModule(AuthModule.class)
 public class ProductsTest {
 
-	private static final Product toAdd = coke();
-	private static final Product toUpdate = cookie();
-
-	private static final Object[] ADD_HMAC_DATA = {SNONCE, toAdd.getProductCode(), toAdd.getDescription(),
-			toAdd.getCategory().getId(), toAdd.getInStock(), toAdd.getStockLowMark(),
-			CurrencyUtils.toCents(toAdd.getCost()), CurrencyUtils.toPercent(toAdd.getMarkup())};
-
-	private static final Object[] UPDATE_HMAC_DATA = {SNONCE, toUpdate.getProductCode(), toUpdate.getDescription(),
-			chocolateCategory().getId(), toUpdate.getStockLowMark(), CurrencyUtils.toCents(toUpdate.getCost()),
-			CurrencyUtils.toPercent(toUpdate.getMarkup()), false
-	};
+    @Inject
+    @ClassRule
+    public static GuiceMockitoProvider mocks;
 
 	@Inject
-	private Products products;
+    @InjectMocks
+	Products products;
+
+    @Inject
+    @Mock
+    ProductsDAO productsDAO;
+
+    @Inject
+    @Mock
+    ProductCategoryDAO categoryDAO;
 
 	@Inject
-	private MockInjectingRunner.MockManager mockManager;
-
-	@Inject
-	@MockInjectingRunner.Mock
+	@Mock
 	SessionState s;
 
 	@Inject
-	@MockInjectingRunner.Mock
-	User u;
+	@Mock
+	User user;
 
-	@Before
-	public void setUp() {
-		mockManager.reset();
-	}
+    @Before
+    public void setUp() {
+        mocks.reset();
+        when(s.isAuthenticated()).thenReturn(true);
+        when(s.isAdmin()).thenReturn(true);
+        when(s.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn(USERNAME);
+    }
 
 	@Test(expected = AuthenticationException.class)
 	public void testAddProductNotAuthenticated() throws Exception {
-		expect(s.isAuthenticated()).andReturn(false);
+        when(s.isAuthenticated()).thenReturn(false);
 
-		testAdd();
+        Coke.add(products);
 	}
 
 	@Test(expected = AccessDeniedException.class)
 	public void testAddProductNotAdmin() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.isAdmin()).andReturn(false);
-		expect(s.getUser()).andReturn(u);
-		expect(u.getUsername()).andReturn(USERNAME);
+        when(s.isAdmin()).thenReturn(false);
 
-		testAdd();
+        products.addProduct(Coke.CODE, Coke.DESC, Drinks.ID, 0, 0, toCents(Coke.BASE), toPercent(Coke.TAX_RATE));
 	}
 
 	@Test(expected = ProductExistsException.class)
 	public void testAddProductExistingProduct() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.isAdmin()).andReturn(true);
-		products.productsDAO.checkProductNotExists(toAdd.getProductCode());
-		expectLastCall().andThrow(new ProductExistsException(coke()));
-
-		testAdd();
+        doThrow(new ProductExistsException(Coke.create()))
+                .when(productsDAO).add(any(Product.class));
+        Coke.add(products);
 	}
 
 	@Test(expected = InvalidCategoryException.class)
 	public void testAddProductInvalidCategory() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.isAdmin()).andReturn(true);
-		products.productsDAO.checkProductNotExists(toAdd.getProductCode());
-		int categoryId = toAdd.getCategory().getId();
-		expect(products.categoryDAO.findCategory(categoryId)).andThrow(new InvalidCategoryException(categoryId));
-
-		testAdd();
+        doThrow(new InvalidCategoryException(Drinks.ID)).when(categoryDAO).findCategory(Drinks.ID);
+        try {
+            Coke.add(products);
+        }
+        finally {
+            verify(productsDAO).checkProductNotExists(Coke.CODE);
+        }
 	}
 
 	@Test
 	public void testAddProduct() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.isAdmin()).andReturn(true);
-		products.productsDAO.checkProductNotExists(toAdd.getProductCode());
-		expect(products.categoryDAO.findCategory(toAdd.getCategory().getId())).andReturn(toAdd.getCategory());
-		products.productsDAO.add(toAdd);
+		when(products.categoryDAO.findCategory(Drinks.ID)).thenReturn(Drinks.create());
 
-		testAdd();
-	}
+        Coke.add(products);
 
-	private void testAdd() {
-		mockManager.replay();
-
-		try {
-			products.addProduct(toAdd.getProductCode(), toAdd.getDescription(),
-					toAdd.getCategory().getId(), toAdd.getInStock(), toAdd.getStockLowMark(),
-					CurrencyUtils.toCents(toAdd.getCost()), CurrencyUtils.toPercent(toAdd.getMarkup()));
-			mockManager.verify();
-		} catch (FridgeException e) {
-			mockManager.verify();
-			throw e;
-		}
+        verify(productsDAO).add(argThat(samePropertyValuesAs(Coke.create())));
 	}
 
 	@Test(expected = AuthenticationException.class)
 	public void testUpdateProductInvalidHMac() throws Exception {
-		expect(s.isAuthenticated()).andReturn(false);
+		when(s.isAuthenticated()).thenReturn(false);
 
-		testUpdate();
+        Cookie.update(products, false);
 	}
 
 	@Test(expected = AccessDeniedException.class)
 	public void testUpdateProductNotAdmin() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.isAdmin()).andReturn(false);
-		expect(s.getUser()).andReturn(u);
-		expect(u.getUsername()).andReturn(USERNAME);
+		when(s.isAdmin()).thenReturn(false);
 
-		testUpdate();
+        Cookie.update(products, false);
 	}
 
 	@Test(expected = InvalidProductException.class)
 	public void testUpdateProductNotFound() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.isAdmin()).andReturn(true);
-		expect(products.productsDAO.findProduct(toUpdate.getProductCode())).andThrow(new InvalidProductException(toUpdate.getProductCode()));
+        doThrow(new InvalidProductException(Cookie.CODE))
+                .when(productsDAO).findProduct(Cookie.CODE);
 
-		testUpdate();
+        Cookie.update(products, false);
 	}
 
 	@Test(expected = InvalidCategoryException.class)
 	public void testUpdateProductInvalidCategory() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.isAdmin()).andReturn(true);
-		expect(products.productsDAO.findProduct(toUpdate.getProductCode())).andReturn(cookie());
-		expect(products.categoryDAO.findCategory(chocolateCategory().getId())).andThrow(new InvalidCategoryException(chocolateCategory().getId()));
+		when(products.productsDAO.findProduct(Cookie.CODE))
+                .thenReturn(Cookie.create());
 
-		testUpdate();
+        doThrow(new InvalidCategoryException(Snacks.ID))
+                .when(products.categoryDAO).findCategory(Chocolate.ID);
+
+        products.updateProduct(Cookie.CODE, Cookie.DESC, Chocolate.ID, 0, toCents(Cookie.BASE),
+                toPercent(Cookie.TAX_RATE), false);
 	}
 
 	@Test
 	public void testUpdateProduct() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.isAdmin()).andReturn(true);
-		expect(products.productsDAO.findProduct(toUpdate.getProductCode())).andReturn(cookie());
-		expect(products.categoryDAO.findCategory(chocolateCategory().getId())).andReturn(chocolateCategory());
+		when(products.productsDAO.findProduct(Cookie.CODE)).thenReturn(Cookie.create());
+		when(products.categoryDAO.findCategory(Snacks.ID)).thenReturn(Snacks.create());
 
-		Product newProduct = new Product(toUpdate.getProductCode(), toUpdate.getDescription(), toUpdate.getCost(),
-				toUpdate.getMarkup(), toUpdate.getInStock(), toUpdate.getStockLowMark(), chocolateCategory());
+		Product newProduct = Cookie.create();
 		newProduct.setEnabled(false);
 
-		products.productsDAO.save(newProduct);
+        Cookie.update(products, false);
 
-		testUpdate();
-	}
-
-	private void testUpdate() {
-		mockManager.replay();
-
-		try {
-			products.updateProduct(toUpdate.getProductCode(), toUpdate.getDescription(),
-					chocolateCategory().getId(), toUpdate.getStockLowMark(),
-					toCents(toUpdate.getCost()), toPercent(toUpdate.getMarkup()), false);
-			mockManager.verify();
-		} catch (FridgeException e) {
-			mockManager.verify();
-			throw e;
-		}
+        ArgumentCaptor<Product> p = ArgumentCaptor.forClass(Product.class);
+        verify(productsDAO).save(p.capture());
+        assertThat(p.getValue(), samePropertyValuesAs(newProduct));
 	}
 }

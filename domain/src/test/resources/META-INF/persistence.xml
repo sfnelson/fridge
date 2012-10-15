@@ -21,7 +21,7 @@
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/fridge-test"/>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.validation.mode" value=""/>
-            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
             <!--<property name="hibernate.show_sql" value="true"/>-->
         </properties>
     </persistence-unit>

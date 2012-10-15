@@ -8,36 +8,56 @@ import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.*;
 import memphis.fridge.protocol.Messages;
 import memphis.fridge.server.ioc.AuthModule;
-import memphis.fridge.server.ioc.MockInjectingRunner;
-import memphis.fridge.server.ioc.MockInjectingRunner.Mock;
-import memphis.fridge.server.ioc.MockInjectingRunner.MockManager;
 import memphis.fridge.server.ioc.SessionState;
-import org.junit.Before;
+import memphis.fridge.test.*;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.Statement;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import static memphis.fridge.server.TestingData.*;
 import static memphis.fridge.utils.CurrencyUtils.fromCents;
 import static memphis.fridge.utils.CurrencyUtils.toCents;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 6/10/12
  */
-@RunWith(MockInjectingRunner.class)
-@MockInjectingRunner.ToInject({Purchase.class})
-@MockInjectingRunner.WithModules({AuthModule.class})
+@RunWith(GuiceTestRunner.class)
+@TestModule(AuthModule.class)
 public class PurchaseTest {
 
-	private static final Object[] HMAC_ARGS = {
-			SNONCE, USERNAME, order()
-	};
+    @ClassRule
+    @Inject
+    public static GuiceMockitoProvider mocks;
+
+    @Rule
+    public TestRule setup = new TestRule() {
+        @Override
+        public Statement apply(final Statement base, final Description description) {
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable {
+                    String name = description.getMethodName();
+                    if (!description.isTest());
+                    else if (name.endsWith("Undergrad")) setUp(true, false);
+                    else if (name.endsWith("Grad")) setUp(true, true);
+                    else setUp(false, false);
+                    base.evaluate();
+                }
+            };
+        }
+    };
 
 	@Inject
+    @InjectMocks
 	Purchase p;
 
 	@Inject
@@ -45,162 +65,135 @@ public class PurchaseTest {
 	User user;
 
 	@Inject
-	MockManager mocks;
-
-	@Inject
-	@MockInjectingRunner.Mock
+	@Mock
 	SessionState s;
 
-	@Before
-	public void setUp() {
+    boolean isGrad = false;
+
+    /** called from setup rule using method name to determine action */
+	public void setUp(boolean isAuthenticated, boolean isGrad) {
 		mocks.reset();
+
+        when(s.isAuthenticated()).thenReturn(isAuthenticated);
+
+        this.isGrad = isGrad;
+        when(s.getUser()).thenReturn(user);
+        when(user.isGrad()).thenReturn(isGrad);
+        when(user.getUsername()).thenReturn(USERNAME);
+        when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
+
+        when(p.products.findProduct(Coke.CODE)).thenReturn(Coke.create());
+        when(p.products.findProduct(Cookie.CODE)).thenReturn(Cookie.create());
 	}
 
 	@Test(expected = AuthenticationException.class)
 	public void testPurchaseNotAuthenticated() throws Exception {
-		expect(s.isAuthenticated()).andReturn(false);
-		test();
-	}
+		when(s.isAuthenticated()).thenReturn(false);
 
-	@Test(expected = FridgeException.class)
-	public void testPurchaseErrorGettingDiscount() throws Exception {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.getUser()).andReturn(user);
-		expect(user.isGrad()).andReturn(false);
-		expect(p.fridge.getGraduateDiscount()).andThrow(new FridgeException("Database error"));
-		test();
+        p.purchase(BasicOrder.order());
 	}
 
 	@Test(expected = InvalidProductException.class)
-	public void testPurchaseInvalidProduct() throws Exception {
-		expectUserInit(true);
-		expect(p.products.findProduct("CC")).andThrow(new InvalidProductException("CC"));
-		test();
+	public void testPurchaseInvalidProductGrad() throws Exception {
+		when(p.products.findProduct(Coke.CODE)).thenThrow(new InvalidProductException(Coke.CODE));
+
+        p.purchase(BasicOrder.order());
 	}
 
 	@Test(expected = InsufficientStockException.class)
-	public void testPurchaseInsufficientStock() throws Exception {
-		Product coke = coke();
+	public void testPurchaseInsufficientStockGrad() throws Exception {
+		Product coke = Coke.create();
 		coke.setInStock(1);
 
-		expectUserInit(true);
-		expect(p.products.findProduct("CC")).andReturn(coke);
-		test();
+		when(p.products.findProduct(Coke.CODE)).thenReturn(coke);
+        p.purchase(BasicOrder.order());
 	}
 
 	@Test(expected = InvalidProductException.class)
-	public void testPurchaseInvalidProductTwo() throws Exception {
-		Product coke = coke();
-		boolean isGrad = true;
+	public void testPurchaseInvalidProductTwoGrad() throws Exception {
+        when(p.products.findProduct(Cookie.CODE)).thenThrow(new InvalidProductException(Cookie.CODE));
 
-		expectUserInit(isGrad);
-		expect(p.products.findProduct("CC")).andReturn(coke);
-		p.products.consumeProduct(coke, ORDER_NUM_COKE);
-
-		BigDecimal num = BigDecimal.valueOf(ORDER_NUM_COKE);
-		expect(p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad)))
-				.andReturn(null);
-		expect(p.products.findProduct("CT")).andThrow(new InvalidProductException("CT"));
-		test();
+        try {
+            p.purchase(BasicOrder.order());
+        }
+        finally {
+            BasicOrder.Cokes.verifyPurchase(p.products, p.purchases, user);
+        }
 	}
 
 	@Test(expected = InsufficientFundsException.class)
 	public void testPurchaseInsufficientFundsUndergrad() throws Exception {
-		expectUserInit(false);
-		expectProductUpdates(false);
-		p.users.removeFunds(user, orderTotal(false));
-		expectLastCall().andThrow(new InsufficientFundsException(USERNAME, BigDecimal.ZERO));
-		test();
+        doThrow(new InsufficientFundsException(USERNAME, BigDecimal.ZERO))
+                .when(p.users).removeFunds(user, BasicOrder.total(isGrad));
+
+        try {
+            p.purchase(BasicOrder.order());
+        }
+        finally {
+            verifyProductUpdates();
+            verify(p.users).removeFunds(user, BasicOrder.total(isGrad));
+        }
 	}
 
 	@Test(expected = InsufficientFundsException.class)
 	public void testPurchaseInsufficientFundsGrad() throws Exception {
-		expectUserInit(true);
-		expectProductUpdates(true);
-		p.users.removeFunds(user, orderTotal(true));
-		expectLastCall().andThrow(new InsufficientFundsException(USERNAME, BigDecimal.ZERO));
-		test();
+        doThrow(new InsufficientFundsException(USERNAME, BigDecimal.ZERO))
+                .when(p.users).removeFunds(user, BasicOrder.total(isGrad));
+
+        try {
+            p.purchase(BasicOrder.order());
+        }
+        finally {
+            verifyProductUpdates();
+            verify(p.users).removeFunds(user, BasicOrder.total(isGrad));
+        }
 	}
 
 	@Test
 	public void testPurchaseGrad() throws Exception {
-		final BigDecimal balance = fromCents(1000);
-		final BigDecimal cost = orderTotal(true);
-		expectUserInit(true);
-		expectProductUpdates(true);
-		expectUserUpdates(cost);
-		expectResponse(cost, balance);
+        final BigDecimal initialBalance = fromCents(1000);
+        final BigDecimal cost = BasicOrder.total(isGrad);
+        final BigDecimal finalBalance = initialBalance.subtract(cost);
 
-		Messages.TransactionResponse response = test();
+        when(p.users.retrieveUser(USERNAME)).thenReturn(user);
+        when(user.getBalance()).thenReturn(finalBalance);
 
-		assertEquals(toCents(balance), response.getBalance());
+        Messages.TransactionResponse response = p.purchase(BasicOrder.order());
+
+        verifyProductUpdates();
+        verify(p.users).removeFunds(user, cost);
+        verify(p.creditLog).createPurchase(user, cost);
+
+		assertEquals(toCents(finalBalance), response.getBalance());
 		assertEquals(toCents(cost), response.getCost());
 	}
 
 	@Test
 	public void testPurchaseUndergrad() throws Exception {
-		final BigDecimal balance = fromCents(1000);
-		final BigDecimal cost = orderTotal(false);
-		expectUserInit(false);
-		expectProductUpdates(false);
-		expectUserUpdates(cost);
-		expectResponse(cost, balance);
+		final BigDecimal initialBalance = fromCents(1000);
+		final BigDecimal cost = BasicOrder.total(isGrad);
+        final BigDecimal finalBalance = initialBalance.subtract(cost);
 
-		Messages.TransactionResponse response = test();
+        when(p.users.retrieveUser(USERNAME)).thenReturn(user);
+        when(user.getBalance()).thenReturn(finalBalance);
 
-		assertEquals(toCents(balance), response.getBalance());
+        Messages.TransactionResponse response = p.purchase(BasicOrder.order());
+
+        verifyProductUpdates();
+        verify(p.users).removeFunds(user, cost);
+        verify(p.creditLog).createPurchase(user, cost);
+
+		assertEquals(toCents(finalBalance), response.getBalance());
 		assertEquals(toCents(cost), response.getCost());
 	}
 
-	/* Helper methods */
-
-	private Messages.TransactionResponse test() {
-		Messages.TransactionResponse r;
-		mocks.replay();
-
-		try {
-			r = p.purchase(order());
-			assertNotNull(r);
-		} catch (FridgeException ex) {
-			mocks.verify();
-			throw ex;
-		}
-		mocks.verify();
-
-		return r;
+	private void verifyProductUpdates() {
+        BasicOrder.Cokes.verifyPurchase(p.products, p.purchases, user);
+        BasicOrder.Cookies.verifyPurchase(p.products, p.purchases, user);
 	}
 
-	private void expectUserInit(boolean isGrad) {
-		expect(s.isAuthenticated()).andReturn(true);
-		expect(s.getUser()).andReturn(user);
-		expect(user.isGrad()).andReturn(isGrad);
-		if (!isGrad) {
-			expect(p.fridge.getGraduateDiscount()).andReturn(GRAD_TAX);
-		}
-	}
-
-	private void expectProductUpdates(boolean isGrad) {
-		Product coke = coke();
-		expect(p.products.findProduct("CC")).andReturn(coke);
-		p.products.consumeProduct(coke, ORDER_NUM_COKE);
-		expect(p.purchases.createPurchase(user, coke, ORDER_NUM_COKE, orderCokeBase(), orderCokeTax(isGrad)))
-				.andReturn(null);
-
-		Product cookie = cookie();
-		expect(p.products.findProduct("CT")).andReturn(cookie);
-		p.products.consumeProduct(cookie, ORDER_NUM_COOKIE);
-		expect(p.purchases.createPurchase(user, cookie, ORDER_NUM_COOKIE, orderCookieBase(), orderCookieTax(isGrad)))
-				.andReturn(null);
-	}
-
-	private void expectUserUpdates(BigDecimal cost) {
-		p.users.removeFunds(user, cost);
-		p.creditLog.createPurchase(user, cost);
-	}
-
-	private void expectResponse(BigDecimal cost, BigDecimal balance) {
-		expect(p.users.retrieveUser(USERNAME)).andReturn(user);
-		expect(user.getUsername()).andReturn(USERNAME);
-		expect(user.getBalance()).andReturn(BigDecimal.TEN);
+	private void verifyUserUpdates(BigDecimal cost) {
+		verify(p.users).removeFunds(user, cost);
+		verify(p.creditLog).createPurchase(user, cost);
 	}
 }

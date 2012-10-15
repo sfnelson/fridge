@@ -41,6 +41,7 @@ public class SignedJsonMessageReader<T> implements MessageBodyReader<T> {
 		return mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE);
 	}
 
+    @SuppressWarnings("unchecked")
 	public T readFrom(Class<T> type, Type genericType, Annotation[] annotations, MediaType mediaType,
 					  MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
 			throws IOException, WebApplicationException {

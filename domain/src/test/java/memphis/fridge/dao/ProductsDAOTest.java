@@ -13,7 +13,7 @@ import memphis.fridge.test.TestModule;
 import memphis.fridge.test.persistence.WithTestData;
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>

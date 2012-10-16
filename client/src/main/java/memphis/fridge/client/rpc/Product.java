@@ -1,59 +1,28 @@
 package memphis.fridge.client.rpc;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.safehtml.shared.SafeUri;
-import com.google.gwt.safehtml.shared.UriUtils;
 
 /**
- * Author: Stephen Nelson <stephen@sfnelson.org>
- * Date: 7/10/12
+ * @author stephen
  */
-public class Product extends JavaScriptObject {
+public interface Product {
 
-	public static native JsArray<Product> parse(String json) /*-{
-		return eval('(' + json + ')').stock;
-	}-*/;
+    String getProductCode();
 
-	protected Product() {
-	}
+    String getDescription();
 
-	public final native String getProductCode() /*-{
-		return this.product_code;
-	}-*/;
+    int getInStock();
 
-	public final native String getDescription() /*-{
-		return this.description;
-	}-*/;
+    String getInStockText();
 
-	public final native int getInStock() /*-{
-		return this.in_stock;
-	}-*/;
+    int getPrice();
 
-	public final native String getInStockText() /*-{
-		return "" + this.in_stock;
-	}-*/;
+    String getPriceText();
 
-	public final native int getPrice() /*-{
-		return this.price;
-	}-*/;
+    String getCategory();
 
-	public final String getPriceText() {
-		int price = getPrice();
-		int mod = price % 100;
-		return "$" + price / 100 + "." + (mod < 10 ? "0" : "") + mod;
-	}
+    int getCategoryOrder();
 
-	public final native String getCategory() /*-{
-		return this.category;
-	}-*/;
+    SafeUri getImageHref();
 
-	public final native int getCategoryOrder() /*-{
-		return this.category_order;
-	}-*/;
-
-	public final SafeUri getImageHref() {
-		return UriUtils.fromTrustedString("/memphis/fridge/rest/images?product="
-				+ UriUtils.encode(getProductCode()));
-	}
 }

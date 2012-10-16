@@ -46,10 +46,10 @@ public class ProductRequest extends AbstractSignedRequest {
 
 		public void onResponseReceived(Request request, final Response response) {
 			if (response.getStatusCode() == 200) {
-				final JsArray<Product> products = Product.parse(response.getText());
-				handler.productsReady(new AbstractList<Product>() {
+				final JsArray<ProductJS> products = ProductJS.parse(response.getText());
+				handler.productsReady(new AbstractList<ProductJS>() {
 					@Override
-					public Product get(int index) {
+					public ProductJS get(int index) {
 						return products.get(index);
 					}
 
@@ -58,16 +58,16 @@ public class ProductRequest extends AbstractSignedRequest {
 						return products.length();
 					}
 
-					public Iterator<Product> iterator() {
+					public Iterator<ProductJS> iterator() {
 						final int size = products.length();
-						return new Iterator<Product>() {
+						return new Iterator<ProductJS>() {
 							int position = 0;
 
 							public boolean hasNext() {
 								return position < size;
 							}
 
-							public Product next() {
+							public ProductJS next() {
 								return products.get(position++);
 							}
 

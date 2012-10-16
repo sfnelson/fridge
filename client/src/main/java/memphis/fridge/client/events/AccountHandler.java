@@ -1,7 +1,6 @@
 package memphis.fridge.client.events;
 
 import memphis.fridge.client.rpc.Account;
-import memphis.fridge.client.rpc.Product;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>

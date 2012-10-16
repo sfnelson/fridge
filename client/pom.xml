@@ -34,6 +34,12 @@
             <artifactId>guava-gwt</artifactId>
             <version>[13.0.1,]</version>
         </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>guice-jpa-testing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <pluginRepositories>

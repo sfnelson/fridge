@@ -46,7 +46,7 @@ public class AccountRequest extends AbstractSignedRequest {
 
 		@Override
 		protected void doCallbackSuccess(Handler handler, String message, Response response) {
-			Account a = JsonUtils.safeEval(message);
+			AccountJS a = JsonUtils.safeEval(message);
 			handler.onAccountReady(a);
 		}
 

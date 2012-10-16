@@ -1,45 +1,22 @@
 package memphis.fridge.client.rpc;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 /**
- * Author: Stephen Nelson <stephen@sfnelson.org>
- * Date: 10/10/12
+ * @author stephen
  */
-public final class Account extends JavaScriptObject {
+public interface Account {
 
-	protected Account() {
-	}
+    String getUsername();
 
-	public native String getUsername() /*-{
-		return this.username;
-	}-*/;
+    String getRealName();
 
-	public native String getRealName() /*-{
-		return this.real_name;
-	}-*/;
+    String getEmail();
 
-	public native String getEmail() /*-{
-		return this.email;
-	}-*/;
+    int getBalance();
 
-	public native int getBalance() /*-{
-		return this.balance;
-	}-*/;
+    boolean isAdmin();
 
-	public native boolean isAdmin() /*-{
-		return this.is_admin;
-	}-*/;
+    boolean isGrad();
 
-	public native boolean isGrad() /*-{
-		return this.is_grad;
-	}-*/;
+    boolean isEnabled();
 
-	public native boolean isEnabled() /*-{
-		return this.is_enabled;
-	}-*/;
-
-	native String getHMAC() /*-{
-		return this.hmac;
-	}-*/;
 }

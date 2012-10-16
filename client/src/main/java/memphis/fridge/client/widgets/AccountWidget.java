@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 
 import javax.inject.Inject;
+
 import memphis.fridge.client.rpc.Account;
 import memphis.fridge.client.utils.NumberUtils;
 import memphis.fridge.client.views.AccountView;

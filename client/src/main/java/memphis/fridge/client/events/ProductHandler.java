@@ -7,5 +7,5 @@ import memphis.fridge.client.rpc.Product;
  * Date: 10/10/12
  */
 public interface ProductHandler {
-	void productSelected(Product p);
+    void productSelected(Product p);
 }

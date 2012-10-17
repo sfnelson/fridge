@@ -20,22 +20,35 @@
     <dependencies>
 
         <dependency>
-            <groupId>memphis.fridge</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>fridge-domain</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>memphis.fridge</groupId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>fridge-persistence</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>fridge-protocol</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>memphis.fridge</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>fridge-client</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>fridge-test-data</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -118,7 +131,7 @@
                 <configuration>
                     <artifactItems>
                         <artifactItem>
-                            <groupId>memphis.fridge</groupId>
+                            <groupId>${project.groupId}</groupId>
                             <artifactId>fridge-client</artifactId>
                             <version>${project.version}</version>
                             <overWrite>true</overWrite>

@@ -4,7 +4,10 @@ import java.util.Date;
 
 import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
-import memphis.fridge.data.Users;
+
+import memphis.fridge.test.data.UsersTable;
+import memphis.fridge.test.data.Graduate;
+import memphis.fridge.test.data.Undergrad;
 import memphis.fridge.domain.Nonce;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.AuthenticationException;
@@ -29,18 +32,18 @@ public class NonceDAOTest extends GuiceJPATest {
 	NonceDAO dao;
 
 	@Test
-	@WithTestData(Users.Graduate.class)
+	@WithTestData(Graduate.class)
 	public void testConsumeNonce() throws Exception {
-		User user = users.retrieveUser(Users.Graduate.NAME);
+		User user = users.retrieveUser(Graduate.NAME);
 		String nonce = generateNonceToken();
 		Date timestamp = new Date();
 		dao.consumeNonce(user, nonce, timestamp);
 	}
 
 	@Test(expected = AuthenticationException.class)
-	@WithTestData(Users.Graduate.class)
+	@WithTestData(Graduate.class)
 	public void testConsumeNonceFailOnReplay() throws Exception {
-		User user = users.retrieveUser(Users.Graduate.NAME);
+		User user = users.retrieveUser(Graduate.NAME);
 		String nonce = generateNonceToken();
 		Date timestamp = new Date();
 		dao.consumeNonce(user, nonce, timestamp);
@@ -48,10 +51,10 @@ public class NonceDAOTest extends GuiceJPATest {
 	}
 
 	@Test
-	@WithTestData(Users.CreateThreeUsers.class)
+	@WithTestData(UsersTable.CreateThreeUsers.class)
 	public void testConsumeNonceVariations() throws Exception {
-		User user1 = users.retrieveUser(Users.Graduate.NAME);
-		User user2 = users.retrieveUser(Users.Undergrad.NAME);
+		User user1 = users.retrieveUser(Graduate.NAME);
+		User user2 = users.retrieveUser(Undergrad.NAME);
 		String nonce1 = generateNonceToken();
 		String nonce2 = generateNonceToken();
 		Date timestamp1 = new Date();
@@ -67,9 +70,9 @@ public class NonceDAOTest extends GuiceJPATest {
 	}
 
 	@Test(expected = AuthenticationException.class)
-	@WithTestData(Users.Graduate.class)
+	@WithTestData(Graduate.class)
 	public void testFailOnOldNonce() throws Exception {
-		User user = users.retrieveUser(Users.Graduate.NAME);
+		User user = users.retrieveUser(Graduate.NAME);
 		String nonce = generateNonceToken();
 		Date timestamp = new Date(System.currentTimeMillis() - Nonce.VALID_PERIOD * 2000);
 		dao.consumeNonce(user, nonce, timestamp);

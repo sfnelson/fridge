@@ -9,7 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import memphis.fridge.protocol.Messages;
 import memphis.fridge.server.io.Signed;
-import memphis.fridge.server.services.AccountService;
+import memphis.fridge.server.services.Users;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -20,7 +20,7 @@ import memphis.fridge.server.services.AccountService;
 public class AccountRequest {
 
 	@Inject
-	AccountService service;
+    Users service;
 
 	@POST
 	@Path("info/json")

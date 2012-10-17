@@ -6,7 +6,8 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import memphis.fridge.data.Users;
+
+import memphis.fridge.test.data.Graduate;
 import memphis.fridge.domain.Product;
 import memphis.fridge.domain.Purchase;
 import memphis.fridge.domain.User;
@@ -48,9 +49,9 @@ public class PurchaseDAOTest extends GuiceJPATest {
 	}
 
 	@Test
-	@WithTestData(Users.Graduate.class)
+	@WithTestData(Graduate.class)
 	public void testCreatePurchase() throws Exception {
-		User user = users.retrieveUser(Users.Graduate.NAME);
+		User user = users.retrieveUser(Graduate.NAME);
 		Product product = products.findProduct("CC");
 		Purchase p = purchase.createPurchase(user, product, 1, BigDecimal.ONE, BigDecimal.ONE);
 

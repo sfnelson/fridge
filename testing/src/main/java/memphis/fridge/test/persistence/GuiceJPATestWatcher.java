@@ -8,6 +8,8 @@ import org.junit.internal.AssumptionViolatedException;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import java.util.logging.Logger;
+
 import static org.junit.Assert.*;
 
 /**
@@ -15,6 +17,8 @@ import static org.junit.Assert.*;
  * Date: 14/10/12
  */
 public class GuiceJPATestWatcher extends TestWatcher {
+
+    private static Logger log = Logger.getLogger(GuiceJPATestWatcher.class.getSimpleName());
 
 	@Inject
 	Provider<EntityManager> em;

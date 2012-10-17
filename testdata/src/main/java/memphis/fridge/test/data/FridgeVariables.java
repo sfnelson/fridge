@@ -1,4 +1,4 @@
-package memphis.fridge.data;
+package memphis.fridge.test.data;
 
 import javax.persistence.EntityManager;
 import memphis.fridge.domain.NumericalVariable;

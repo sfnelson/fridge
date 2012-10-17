@@ -35,10 +35,11 @@ interface AuthenticationChecker {
 		}
 
 		public Object invoke(MethodInvocation invocation) throws Throwable {
-			if (!session.get().isAuthenticated())
+            SessionState session = this.session.get();
+			if (!session.isAuthenticated())
 				throw new AuthenticationException();
-			else if (!session.get().isAdmin())
-				throw new AccessDeniedException(session.get().getUser().getUsername());
+			else if (!session.isAdmin())
+				throw new AccessDeniedException(session.getUser().getUsername());
 			else
 				return invocation.proceed();
 		}

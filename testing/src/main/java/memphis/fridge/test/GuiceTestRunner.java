@@ -1,13 +1,13 @@
 package memphis.fridge.test;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.google.common.collect.Lists;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
+import com.google.inject.*;
+import com.google.inject.name.Names;
 import memphis.fridge.test.ioc.GuiceMockModule;
+import memphis.fridge.test.persistence.GuiceJPAResource;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
 /**
@@ -16,15 +16,21 @@ import org.junit.runners.BlockJUnit4ClassRunner;
  */
 public class GuiceTestRunner extends BlockJUnit4ClassRunner {
 
+    private static final Logger log = Logger.getLogger(GuiceTestRunner.class.getSimpleName());
+
 	protected final Injector injector;
 
 	public GuiceTestRunner(final Class<?> klass) throws Exception {
 		super(klass);
+
 		List<Module> modules = getModules(klass);
 		modules.add(new AbstractModule() {
 			@Override
 			protected void configure() {
-				requestStaticInjection(klass);
+                bind(new TypeLiteral<Class<?>>() {})
+                        .annotatedWith(GuiceJPAResource.TestClass.class)
+                        .toInstance(klass);
+                requestStaticInjection(klass);
 			}
 		});
 		modules.add(new GuiceMockModule(klass));

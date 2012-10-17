@@ -3,12 +3,10 @@ package memphis.fridge.dao;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import memphis.fridge.data.FridgeVariables;
-import memphis.fridge.data.Users;
-import memphis.fridge.data.Users.Admin;
-import memphis.fridge.data.Users.CreateThreeUsers;
-import memphis.fridge.data.Users.Graduate;
-import memphis.fridge.data.Users.Undergrad;
+
+import memphis.fridge.test.data.*;
+import memphis.fridge.test.data.UsersTable;
+import memphis.fridge.test.data.UsersTable.CreateThreeUsers;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.InsufficientFundsException;
 import memphis.fridge.exceptions.InvalidUserException;
@@ -18,7 +16,7 @@ import memphis.fridge.test.persistence.WithTestData;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import static memphis.fridge.data.Users.assertUsersEquals;
+import static memphis.fridge.test.data.UsersTable.assertUsersEquals;
 import static memphis.fridge.utils.CryptUtils.md5;
 import static memphis.fridge.utils.CurrencyUtils.fromCents;
 import static org.junit.Assert.assertEquals;
@@ -81,13 +79,13 @@ public class UserDAOTest extends GuiceJPATest {
 	}
 
 	@Test
-	@WithTestData(Users.CreateThreeUsers.class)
+	@WithTestData(UsersTable.CreateThreeUsers.class)
 	public void testCheckSufficientBalance() throws Exception {
 		users.checkSufficientBalance(Graduate.NAME, fromCents(800));
 	}
 
 	@Test(expected = InsufficientFundsException.class)
-	@WithTestData(Users.CreateThreeUsers.class)
+	@WithTestData(UsersTable.CreateThreeUsers.class)
 	public void testCheckInsufficientBalance() throws Exception {
 		users.checkSufficientBalance(Graduate.NAME, fromCents(1200));
 	}
@@ -99,7 +97,7 @@ public class UserDAOTest extends GuiceJPATest {
 	}
 
 	@Test
-	@WithTestData(Users.CreateThreeUsers.class)
+	@WithTestData(UsersTable.CreateThreeUsers.class)
 	public void testSigning() throws Exception {
 		User grad = Graduate.create();
 		String nonce = "5343a3ce73gi79bf437e";
@@ -112,7 +110,7 @@ public class UserDAOTest extends GuiceJPATest {
 	}
 
 	@Test
-	@WithTestData(Users.CreateThreeUsers.class)
+	@WithTestData(UsersTable.CreateThreeUsers.class)
 	public void testGetPassword() throws Exception {
 		User grad = Graduate.create();
 
@@ -122,7 +120,7 @@ public class UserDAOTest extends GuiceJPATest {
 	}
 
 	@Test
-	@WithTestData(Users.CreateThreeUsers.class)
+	@WithTestData(UsersTable.CreateThreeUsers.class)
 	public void testVerifying() throws Exception {
 		User grad = Graduate.create();
 		String nonce = "5343a3ce73gi79bf437e";

@@ -1,13 +1,11 @@
 package memphis.fridge.domain;
 
-import javax.inject.Inject;
+import javax.validation.Validation;
 import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotNull;
-import memphis.fridge.ioc.TestModuleWithValidator;
-import memphis.fridge.test.GuiceTestRunner;
-import memphis.fridge.test.TestModule;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static memphis.fridge.utils.ValidationUtils.validate;
 
@@ -15,17 +13,29 @@ import static memphis.fridge.utils.ValidationUtils.validate;
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 9/10/12
  */
-@RunWith(GuiceTestRunner.class)
-@TestModule(value = TestModuleWithValidator.class, args = "FridgeTestDB")
 public class UserTest {
 
-	@Inject
-	Validator validator;
+    private static ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+
+	private Validator validator;
+
+    @Before
+    public void setUp() {
+        validator = factory.getValidator();
+    }
 
 	class TestValidation {
 		@NotNull
 		Object foo;
 	}
+
+    @Test
+    public void testValidation() throws Exception {
+        TestValidation v = new TestValidation();
+        validate(validator.validate(v), 1);
+        v.foo = new Object();
+        validate(validator.validate(v), 0);
+    }
 
 	@Test
 	public void testCreateUserNoArgs() throws Exception {
@@ -50,6 +60,4 @@ public class UserTest {
 		User user = new User("USERNAME", "PASSWORD", "Real Name", "email@addre.ss");
 		validate(validator.validate(user), 0);
 	}
-
-
 }

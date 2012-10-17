@@ -5,10 +5,10 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import memphis.fridge.protocol.Messages;
-import memphis.fridge.server.services.GetProducts;
+import memphis.fridge.server.ioc.SessionState;
+import memphis.fridge.server.services.Products;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -18,16 +18,18 @@ import memphis.fridge.server.services.GetProducts;
 @RequestScoped
 public class ProductsRequest {
 
-	@Inject
-	GetProducts service;
+    @Inject
+    SessionState session;
 
-	@QueryParam("username")
-	String username;
+	@Inject
+    Products service;
 
 	@GET
 	@Path("list/json")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Messages.StockResponse getProductsJSON() {
-		return service.getProducts(username);
+        if (!session.isAuthenticated())
+            return service.getProducts();
+        return service.getProductsAuthenticated();
 	}
 }

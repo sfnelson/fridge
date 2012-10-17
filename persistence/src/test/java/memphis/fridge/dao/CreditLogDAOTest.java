@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 
 import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
-import memphis.fridge.data.Users;
+
+import memphis.fridge.test.data.Graduate;
 import memphis.fridge.domain.User;
 import memphis.fridge.test.GuiceJPATest;
 import memphis.fridge.test.TestModule;
@@ -27,9 +28,9 @@ public class CreditLogDAOTest extends GuiceJPATest {
 	UserDAO users;
 
 	@Test
-	@WithTestData(Users.Graduate.class)
+	@WithTestData(Graduate.class)
 	public void testCreatePurchase() throws Exception {
-		User user = users.retrieveUser(Users.Graduate.NAME);
+		User user = users.retrieveUser(Graduate.NAME);
 		BigDecimal amount = fromCents(100);
 		creditLog.createPurchase(user, amount);
 	}

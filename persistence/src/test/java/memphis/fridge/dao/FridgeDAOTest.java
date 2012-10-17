@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
-import memphis.fridge.data.FridgeVariables;
+import memphis.fridge.test.data.FridgeVariables;
 import memphis.fridge.test.GuiceJPATest;
 import memphis.fridge.test.TestModule;
 import memphis.fridge.test.persistence.WithTestData;

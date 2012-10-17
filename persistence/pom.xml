@@ -11,23 +11,22 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <name>Fridge Domain</name>
+    <name>Fridge Persistence</name>
 
-    <artifactId>fridge-domain</artifactId>
+    <artifactId>fridge-persistence</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
-            <version>2.0.0</version>
-            <scope>provided</scope>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>fridge-domain</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
-            <scope>provided</scope>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>fridge-test-data</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -41,13 +40,36 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
             <version>[4.1.6.Final,]</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>4.3.0.Final</version>
+            <version>[4.3.0.Final,]</version>
+        </dependency>
+
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>[9,]</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-persist</artifactId>
+            <version>[3.0,]</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>[1.7.1,]</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>[1.7.1,]</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

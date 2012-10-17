@@ -5,7 +5,9 @@ import java.util.List;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import memphis.fridge.data.Products;
+
+import memphis.fridge.test.data.Coke;
+import memphis.fridge.test.data.ProductsTable;
 import memphis.fridge.domain.Product;
 import memphis.fridge.exceptions.InsufficientStockException;
 import memphis.fridge.test.GuiceJPATest;
@@ -20,7 +22,7 @@ import static org.junit.Assert.*;
  * Date: 7/10/12
  */
 @TestModule(value = JpaPersistModule.class, args = "FridgeTestDB")
-@WithTestData(Products.class)
+@WithTestData(ProductsTable.class)
 public class ProductsDAOTest extends GuiceJPATest {
 
 	@Inject
@@ -48,21 +50,20 @@ public class ProductsDAOTest extends GuiceJPATest {
 	public void testConsumeProduct() throws Exception {
 		Product coke = products.get().findProduct("CC");
 		int stock = coke.getInStock();
-		products.get().consumeProduct(coke, 20);
-		assertEquals(stock - 20, products.get().findProduct("CC").getInStock());
+		products.get().consumeProduct(coke, Coke.STOCK);
+		assertEquals(stock - Coke.STOCK, products.get().findProduct("CC").getInStock());
 	}
 
 	@Test(expected = InsufficientStockException.class)
 	public void testConsumeProductTooLittleStock() throws Exception {
 		Product coke = products.get().findProduct("CC");
-		int stock = coke.getInStock();
-		products.get().consumeProduct(coke, 24);
+		products.get().consumeProduct(coke, Coke.STOCK + 2);
 	}
 
 	@Test(expected = InsufficientStockException.class)
 	public void testConsumeProductTooLittleStock2() throws Exception {
 		Product coke = products.get().findProduct("CC");
-		products.get().consumeProduct(coke, 20);
+		products.get().consumeProduct(coke, Coke.STOCK - 2);
 		products.get().consumeProduct(coke, 4);
 	}
 

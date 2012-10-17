@@ -3,18 +3,23 @@ package memphis.fridge.server.services;
 import javax.inject.Inject;
 
 import com.google.common.collect.Lists;
+import memphis.fridge.test.data.Coke;
+import memphis.fridge.test.data.Cookie;
+import memphis.fridge.test.data.Drinks;
+import memphis.fridge.test.data.Snacks;
 import memphis.fridge.domain.User;
 import memphis.fridge.protocol.Messages;
 import memphis.fridge.server.ioc.AuthModule;
 import memphis.fridge.server.ioc.SessionState;
 import memphis.fridge.test.*;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static memphis.fridge.server.TestingData.*;
+import static memphis.fridge.test.data.Utils.*;
 import static memphis.fridge.utils.CurrencyUtils.toCents;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +29,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(GuiceTestRunner.class)
 @TestModule(AuthModule.class)
-public class GetProductsTest {
+public class ProductsListTest {
 
 	@Inject
 	@ClassRule
@@ -32,7 +37,7 @@ public class GetProductsTest {
 
 	@Inject
 	@InjectMocks
-	GetProducts p;
+	Products p;
 
 	@Inject
 	@Mock
@@ -41,12 +46,22 @@ public class GetProductsTest {
 	@Mock
 	SessionState s;
 
+    @Before
+    public void setUp() {
+        when(p.session.isAuthenticated()).thenReturn(true);
+        when(p.session.getUser()).thenReturn(u);
+        when(u.isGrad()).thenReturn(true);
+        when(p.fridgeDAO.getGraduateDiscount()).thenReturn(GRAD_TAX);
+        when(p.productsDAO.getEnabledProducts()).thenReturn(
+                Lists.newArrayList(Coke.create(), Cookie.create()));
+    }
+
+
 	@Test
 	public void testGetProductsNoUser() throws Exception {
-		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
-		when(p.products.getEnabledProducts()).thenReturn(Lists.newArrayList(Coke.create(), Cookie.create()));
+        when(p.session.isAuthenticated()).thenReturn(false); // not actually called, just for safety.
 
-		Messages.StockResponse r = p.getProducts(null);
+		Messages.StockResponse r = p.getProducts();
 
 		assertNotNull(r);
 		assertEquals(2, r.getStockCount());
@@ -56,12 +71,7 @@ public class GetProductsTest {
 
 	@Test
 	public void testGetProductsGrad() throws Exception {
-		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
-		when(p.products.getEnabledProducts()).thenReturn(Lists.newArrayList(Coke.create(), Cookie.create()));
-		when(p.users.retrieveUser(USERNAME)).thenReturn(u);
-		when(u.isGrad()).thenReturn(true);
-
-		Messages.StockResponse r = p.getProducts(USERNAME);
+		Messages.StockResponse r = p.getProductsAuthenticated();
 
 		assertNotNull(r);
 		assertEquals(2, r.getStockCount());
@@ -71,12 +81,9 @@ public class GetProductsTest {
 
 	@Test
 	public void testGetProductsUGrad() throws Exception {
-		when(p.fridge.getGraduateDiscount()).thenReturn(GRAD_TAX);
-		when(p.products.getEnabledProducts()).thenReturn(Lists.newArrayList(Coke.create(), Cookie.create()));
-		when(p.users.retrieveUser(USERNAME)).thenReturn(u);
-		when(u.isGrad()).thenReturn(false);
+        when(u.isGrad()).thenReturn(false);
 
-		Messages.StockResponse r = p.getProducts(USERNAME);
+		Messages.StockResponse r = p.getProductsAuthenticated();
 
 		assertNotNull(r);
 		assertEquals(2, r.getStockCount());

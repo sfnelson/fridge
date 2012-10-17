@@ -9,6 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import memphis.fridge.protocol.Messages;
 import memphis.fridge.server.io.Signed;
+import memphis.fridge.server.ioc.SessionState;
 import memphis.fridge.server.services.Users;
 
 /**
@@ -20,13 +21,20 @@ import memphis.fridge.server.services.Users;
 public class AccountRequest {
 
 	@Inject
-    Users service;
+	SessionState session;
+
+	@Inject
+	Users service;
 
 	@POST
 	@Path("info/json")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Messages.AccountResponse requestAccountDetails(@Signed("account-request") Messages.AccountRequest input) {
-		return service.getAccountDetails(input.getUsername());
+		if (session.getUser().getUsername().equals(input.getUsername())) {
+			return service.getAccountDetails();
+		} else {
+			return service.getAccountDetails(input.getUsername());
+		}
 	}
 }

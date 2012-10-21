@@ -1,0 +1,165 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <ui:style type="memphis.fridge.client.widgets.AccountPopup.PopupStyle">
+        .panel {
+            display: inline-block;
+        }
+
+        .popup {
+            display: block;
+            position: absolute;
+            top: 6ex;
+            right: 0;
+            left: auto;
+            background-color: white;
+            margin: 0 1ex;
+            border: solid 1px #bebebe;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+            text-align: left;
+            z-index: 100;
+        }
+
+        .popup > * {
+            overflow: hidden;
+        }
+
+        .panel .popup {
+            display: none;
+        }
+
+        .content {
+            position: relative;
+        }
+
+        .content > * {
+            padding: 1ex 1ex;
+        }
+
+        .arrows {
+            display: inline-block;
+            position: relative;
+            z-index: 101;
+        }
+
+        .expand {
+            display: inline-block;
+            border-top: solid #a2a2a2 1ex;
+            border-left: solid transparent 0.6ex;
+            border-right: solid transparent 0.6ex;
+            width: 0;
+            height: 0;
+        }
+
+        .loginPanel:hover .expand, .expand:hover {
+            border-top-color: #666;
+        }
+
+        .arrow, .arrow-inner {
+            position: absolute;
+            display: block;
+            visibility: hidden;
+            bottom: 0;
+            margin-left: -1ex;
+            border-bottom: solid 1.2ex #bebebe;
+            border-left: solid 1.6ex transparent;
+            border-right: solid 1.6ex transparent;
+            z-index: 101;
+        }
+
+        .arrow-inner {
+            margin-bottom: -1px;
+            border-bottom-color: white;
+        }
+
+        .info {
+            position: relative;
+            overflow: auto;
+            margin: 0;
+        }
+
+        .info dt, .info dd {
+            display: inline-block;
+            line-height: 4ex;
+        }
+
+        .info dt {
+            float: left;
+            clear: both;
+
+        }
+
+        .info dd {
+            float: right;
+        }
+
+        .buttons {
+            clear: both;
+            overflow: auto;
+            position: relative;
+        }
+
+        .buttons button {
+            display: inline-block;
+            float: left;
+            margin-right: 0.5ex;
+        }
+
+        .show .arrow, .show .arrow-inner {
+            visibility: visible;
+        }
+
+        .buttons .logout {
+            float: right;
+            margin-right: 0;
+        }
+
+        .container {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            text-align: right;
+        }
+
+        .container > * {
+            padding: 1ex 1ex;
+            border-top: solid 1px #bebebe;
+            border-bottom: solid 1px #bebebe;
+        }
+
+        .container input {
+            width: 5em;
+            margin-bottom: 0;
+        }
+    </ui:style>
+    <g:HTMLPanel styleName="{style.panel}">
+        <span class="{style.arrows}">
+            <span class="{style.arrow}"></span>
+            <span class="{style.arrow-inner}"></span>
+            <g:Label ui:field="expand" styleName="{style.expand}"></g:Label>
+        </span>
+        <g:PopupPanel ui:field="popup" styleName="{style.popup}">
+            <g:HTMLPanel ui:field="content" styleName="{style.content}">
+                <dl class="{style.info}">
+                    <dt>name</dt>
+                    <dd>
+                        <g:Label ui:field="full_name"></g:Label>
+                    </dd>
+                    <dt>email</dt>
+                    <dd>
+                        <g:Label ui:field="email"></g:Label>
+                    </dd>
+                    <dt>remember details</dt>
+                    <dd>
+                        <g:CheckBox ui:field="stayLoggedIn"></g:CheckBox>
+                    </dd>
+                </dl>
+                <g:SimplePanel ui:field="container" styleName="{style.container}"></g:SimplePanel>
+                <div class="{style.buttons}">
+                    <g:Button ui:field="topup">Top up</g:Button>
+                    <g:Button ui:field="transfer">Transfer</g:Button>
+                    <g:Button ui:field="logout" styleName="{style.logout}">Logout</g:Button>
+                </div>
+            </g:HTMLPanel>
+        </g:PopupPanel>
+    </g:HTMLPanel>
+</ui:UiBinder>

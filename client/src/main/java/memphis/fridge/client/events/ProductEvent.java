@@ -4,7 +4,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import memphis.fridge.client.rpc.Product;
+import memphis.fridge.client.rpc.Messages;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -18,9 +18,9 @@ public class ProductEvent extends Event<ProductHandler> {
 		return eb.addHandler(TYPE, handler);
 	}
 
-	private final Product p;
+	private final Messages.Stock p;
 
-	public ProductEvent(Product p) {
+	public ProductEvent(Messages.Stock p) {
 		this.p = p;
 	}
 

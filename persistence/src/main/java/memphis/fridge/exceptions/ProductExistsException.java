@@ -1,12 +1,10 @@
 package memphis.fridge.exceptions;
 
+import javax.ws.rs.core.Response;
 import memphis.fridge.domain.Product;
 
 public class ProductExistsException extends FridgeException {
-
-    private final Product product;
-
-    public ProductExistsException(Product product) {
-        this.product = product;
-    }
+	public ProductExistsException(Product product) {
+		super(Response.Status.BAD_REQUEST, "Product exists");
+	}
 }

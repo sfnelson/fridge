@@ -1,0 +1,8 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <g:HTMLPanel>
+        <g:TextBox ui:field="toUser"/>
+        <g:TextBox ui:field="amount"/>
+        <g:Button ui:field="transfer">Transfer</g:Button>
+    </g:HTMLPanel>
+</ui:UiBinder>

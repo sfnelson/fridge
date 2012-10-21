@@ -23,6 +23,7 @@ public class ProductsDAO {
 		return em.get().find(Product.class, name);
 	}
 
+	@RequireTransaction
 	public void consumeProduct(Product product, int amount) {
 		product = findProduct(product.getProductCode());
 		int stock = product.getInStock();
@@ -54,6 +55,7 @@ public class ProductsDAO {
 		return image.getImage();
 	}
 
+	@RequireTransaction
 	public void storeImage(Product product, byte[] data) {
 		ProductImage image = em.get().find(ProductImage.class, product.getProductCode());
 		if (image != null) {

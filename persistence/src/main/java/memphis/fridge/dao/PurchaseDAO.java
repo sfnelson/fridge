@@ -19,6 +19,7 @@ public class PurchaseDAO {
 	@Inject
 	Provider<EntityManager> em;
 
+	@RequireTransaction
 	public Purchase createPurchase(User user, Product product, int count, BigDecimal cost, BigDecimal surplus) {
 		Purchase p = new Purchase(user, product, new Date(), count, cost, surplus);
 		em.get().persist(p);

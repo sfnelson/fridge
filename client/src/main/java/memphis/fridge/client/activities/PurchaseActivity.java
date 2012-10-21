@@ -21,7 +21,11 @@ import memphis.fridge.client.events.ProductEvent;
 import memphis.fridge.client.events.ProductHandler;
 import memphis.fridge.client.places.LoginPlace;
 import memphis.fridge.client.places.SessionPlace;
-import memphis.fridge.client.rpc.*;
+import memphis.fridge.client.rpc.Messages;
+import memphis.fridge.client.rpc.ProductRequest;
+import memphis.fridge.client.rpc.PurchaseEntry;
+import memphis.fridge.client.rpc.PurchaseRequest;
+import memphis.fridge.client.views.ErrorView;
 import memphis.fridge.client.views.PurchaseView;
 
 import static memphis.fridge.client.utils.NumberUtils.printCurrency;
@@ -46,9 +50,12 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	@Inject
 	PlaceController pc;
 
+	@Inject
+	ErrorView message;
+
 	private SessionPlace details;
 
-	private Map<String, Product> products;
+	private Map<String, Messages.Stock> products;
 	private Map<String, Integer> order = Maps.newHashMap();
 
 	public PurchaseActivity() {
@@ -66,13 +73,13 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 		panel.setWidget(view);
 
 		ProductEvent.register(eventBus, new ProductHandler() {
-			public void productSelected(Product p) {
+			public void productSelected(Messages.Stock p) {
 				addToOrder(p.getProductCode(), 1);
 				view.setProduct(p.getProductCode());
 			}
 		});
 		AccountEvent.register(eventBus, new AccountHandler() {
-			public void accountAvailable(Account a) {
+			public void accountAvailable(Messages.Account a) {
 				view.setBalance(a.getBalance());
 			}
 		});
@@ -127,10 +134,9 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 					});
 				}
 
-				public void onError(Throwable exception) {
-					log.warning("error placing order: " + exception.getMessage());
-					// TODO better error handling
-					Window.alert("failed to place order!");
+				public void onError(String reason) {
+					log.warning("Error placing order: " + reason);
+					message.showMessage(reason);
 				}
 			});
 		}
@@ -152,7 +158,7 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 		if (products == null) return null;
 		List<PurchaseEntry> content = Lists.newArrayList();
 		for (String code : order.keySet()) {
-			Product p = products.get(code);
+			Messages.Stock p = products.get(code);
 			if (p != null) {
 				content.add(new PurchaseEntry(p, order.get(code)));
 			}
@@ -163,9 +169,9 @@ public class PurchaseActivity extends AbstractActivity implements PurchaseView.P
 	private void refreshProducts() {
 		products = null;
 		productsRequest.get().requestProducts(details.getUsername(), new ProductRequest.Handler() {
-			public void productsReady(List<? extends Product> incoming) {
+			public void productsReady(List<? extends Messages.Stock> incoming) {
 				products = Maps.newHashMap();
-				for (Product p : incoming) {
+				for (Messages.Stock p : incoming) {
 					products.put(p.getProductCode().toUpperCase(), p);
 				}
 				List<String> toRemove = Lists.newArrayList();

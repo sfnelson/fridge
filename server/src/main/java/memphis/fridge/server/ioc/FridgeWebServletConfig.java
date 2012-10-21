@@ -10,6 +10,8 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.protobuf.ExtensionRegistry;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import javax.persistence.EntityManager;
+import memphis.fridge.dao.RequireTransaction;
 import memphis.fridge.server.AccountRequest;
 import memphis.fridge.server.OrderRequest;
 import memphis.fridge.server.ProductImages;
@@ -33,6 +35,8 @@ public class FridgeWebServletConfig extends GuiceServletContextListener {
 						new AuthenticationChecker.CheckIsAuthenticated(getProvider(SessionState.class)));
 				bindInterceptor(Matchers.any(), Matchers.annotatedWith(RequireAdmin.class),
 						new AuthenticationChecker.CheckIsAdmin(getProvider(SessionState.class)));
+				bindInterceptor(Matchers.any(), Matchers.annotatedWith(RequireTransaction.class),
+						new TransactionChecker.CheckInTransaction(getProvider(EntityManager.class)));
 
 				bind(SignedJsonMessageReader.class);
 				bind(SignedJsonMessageWriter.class);

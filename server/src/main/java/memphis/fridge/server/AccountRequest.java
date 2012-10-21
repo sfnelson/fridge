@@ -37,4 +37,20 @@ public class AccountRequest {
 			return service.getAccountDetails(input.getUsername());
 		}
 	}
+
+	@POST
+	@Path("topup/json")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Messages.TransactionResponse topupAccount(@Signed("topup-request") Messages.TopupRequest input) {
+		return service.topup(input);
+	}
+
+	@POST
+	@Path("transfer/json")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Messages.TransactionResponse transferFunds(@Signed("transfer-request") Messages.TransferRequest input) {
+		return service.transfer(input);
+	}
 }

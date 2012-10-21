@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+import com.google.inject.persist.Transactional;
 import com.google.inject.servlet.RequestScoped;
 import javax.inject.Inject;
 import memphis.fridge.dao.NonceDAO;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.User;
 import memphis.fridge.exceptions.AuthenticationException;
+import memphis.fridge.exceptions.InvalidUserException;
 import memphis.fridge.server.io.Signed;
 import memphis.fridge.utils.CryptUtils;
 
@@ -38,6 +40,7 @@ public class SessionState {
 	private String nonce;
 	private String timestamp;
 
+	@Transactional
 	public void authenticate(Signed verb, Map<String, List<String>> params, String message) {
 		// not signed unless it has username, nonce, timestamp, verb, and signature
 		if (!params.containsKey(USERNAME) || params.get(USERNAME).isEmpty())
@@ -64,13 +67,18 @@ public class SessionState {
 		assert verb != null && verb.value() != null;
 		assert message != null;
 
+		try {
+			users.checkValidUser(username);
+		} catch (InvalidUserException ex) {
+			throw new AuthenticationException("invalid user");
+		}
+
 		User user = users.retrieveUser(username);
 		Date realTimestamp = new Date(Long.valueOf(timestamp) * 1000);
-		Date now = new Date();
 
 		// throw an exception if the signature is invalid
 		if (!signature.equals(CryptUtils.sign(user.getPassword(), username, nonce, timestamp, verb.value(), message))) {
-			throw new AuthenticationException("message failed authentication");
+			throw new AuthenticationException("encryption error");
 		}
 
 		// consume the current nonce to prevent replay attacks

@@ -2,7 +2,6 @@ package memphis.fridge.client.rpc;
 
 import java.util.logging.Logger;
 
-import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
@@ -22,9 +21,9 @@ public class AccountRequest extends AbstractSignedRequest {
 	private static final Logger log = Logger.getLogger("account-info");
 
 	public static interface Handler {
-		public void onAccountReady(Account account);
+		public void onAccountReady(Messages.Account account);
 
-		public void onError(Throwable exception);
+		public void onError(String message);
 	}
 
 	public void requestAccountInfo(SessionPlace details, Handler callback) {
@@ -39,6 +38,11 @@ public class AccountRequest extends AbstractSignedRequest {
 		}
 	}
 
+	@Override
+	Logger getLog() {
+		return log;
+	}
+
 	private static class Callback extends AbstractSignedRequest.Callback<Handler> {
 		private Callback(AccountRequest req, Handler handler) {
 			super(req, 200, handler);
@@ -46,14 +50,13 @@ public class AccountRequest extends AbstractSignedRequest {
 
 		@Override
 		protected void doCallbackSuccess(Handler handler, String message, Response response) {
-			AccountJS a = JsonUtils.safeEval(message);
+			Messages.Account a = Messages.parseAccountResponse(message);
 			handler.onAccountReady(a);
 		}
 
 		@Override
-		protected void doCallbackFailure(Handler handler, Throwable ex) {
-			log.warning("error requesting account info: " + ex.getMessage());
-			handler.onError(ex);
+		protected void doCallbackFailure(Handler handler, String message) {
+			handler.onError(message);
 		}
 	}
 

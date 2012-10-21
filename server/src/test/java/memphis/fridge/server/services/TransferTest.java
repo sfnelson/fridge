@@ -5,22 +5,26 @@ import java.math.BigDecimal;
 import com.google.inject.Inject;
 import memphis.fridge.dao.UserDAO;
 import memphis.fridge.domain.User;
-import memphis.fridge.exceptions.*;
+import memphis.fridge.exceptions.AuthenticationException;
+import memphis.fridge.exceptions.InsufficientFundsException;
+import memphis.fridge.exceptions.InvalidAmountException;
+import memphis.fridge.exceptions.InvalidUserException;
 import memphis.fridge.protocol.Messages;
 import memphis.fridge.server.ioc.AuthModule;
 import memphis.fridge.server.ioc.SessionState;
 import memphis.fridge.test.*;
+import memphis.fridge.test.data.Admin;
+import memphis.fridge.test.data.Graduate;
+import memphis.fridge.test.data.Undergrad;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static memphis.fridge.utils.CurrencyUtils.toCents;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static memphis.fridge.utils.CurrencyUtils.toCents;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -30,104 +34,108 @@ import static org.mockito.Mockito.when;
 @TestModule(AuthModule.class)
 public class TransferTest {
 
-    @ClassRule
-    @Inject
-    public static GuiceMockitoProvider mocks;
+	@ClassRule
+	@Inject
+	public static GuiceMockitoProvider mocks;
 
-    private final String snonce = "SNONCE";
-    private final String fromUser = "FROMUSER";
-    private final String toUser = "TOUSER";
-    private final int amount = 0;
-    private final String hmac = "HMAC";
+	private final String snonce = "SNONCE";
+	private final int amount = 0;
+	private final String hmac = "HMAC";
 
-    @Inject
-    @InjectMocks
-    Transfer transfer;
+	@Inject
+	@InjectMocks
+	Users transfer;
 
-    @Inject
-    @Mock
-    UserDAO users;
+	@Inject
+	@Mock
+	UserDAO users;
 
-    @Inject
-    @Mock
-    User user;
+	@Inject
+	@Mock
+	SessionState s;
 
-    @Inject
-    @Mock
-    SessionState s;
+	User fromUser;
+	User toUser;
+	User adminUser;
 
-    @Before
-    public void setUp() {
-        mocks.reset();
+	@Before
+	public void setUp() {
+		mocks.reset();
 
-        when(s.isAuthenticated()).thenReturn(true);
-    }
+		fromUser = Graduate.create();
+		toUser = Undergrad.create();
+		adminUser = Admin.create();
 
-    @Test(expected = AuthenticationException.class)
-    public void testNotAuthenticated() throws Exception {
-        when(s.isAuthenticated()).thenReturn(false);
-        test(amount);
-    }
+		when(s.isAuthenticated()).thenReturn(true);
+	}
 
-    @Test(expected = InvalidUserException.class)
-    public void testTransferBadToUser() throws Exception {
-        when(s.isAuthenticated()).thenReturn(true);
-        doThrow(new InvalidUserException(toUser))
-                .when(users).checkValidUser(toUser);
+	@Test(expected = AuthenticationException.class)
+	public void testNotAuthenticated() throws Exception {
+		when(s.isAuthenticated()).thenReturn(false);
+		test(amount);
+	}
 
-        test(amount);
-    }
+	@Test(expected = InvalidUserException.class)
+	public void testTransferBadToUser() throws Exception {
+		when(s.isAuthenticated()).thenReturn(true);
+		doThrow(new InvalidUserException(toUser.getUsername()))
+				.when(users).checkValidUser(toUser.getUsername());
 
-    @Test(expected = InvalidAmountException.class)
-    public void testTransferBadAmount() throws Exception {
-        test(-1);
-    }
+		test(amount);
+	}
 
-    @Test
-    public void testTransferZero() throws Exception {
-        BigDecimal balance = new BigDecimal("10.00");
+	@Test(expected = InvalidAmountException.class)
+	public void testTransferBadAmount() throws Exception {
+		when(s.getUser()).thenReturn(fromUser);
 
-        when(users.retrieveUser(fromUser)).thenReturn(user);
-        when(user.getBalance()).thenReturn(balance);
+		test(-1);
+	}
 
-        Messages.TransactionResponse r = test(0);
+	@Test
+	public void testTransferZero() throws Exception {
+		when(s.getUser()).thenReturn(fromUser);
+		when(users.retrieveUser(fromUser.getUsername())).thenReturn(fromUser);
 
-        assertEquals(1000, r.getBalance());
-        assertEquals(0, r.getCost());
-    }
+		Messages.TransactionResponse r = test(0);
 
-    @Test(expected = InsufficientFundsException.class)
-    public void testTransferInsufficientFunds() throws Exception {
-        BigDecimal amount = new BigDecimal("10.00");
+		assertEquals(500, r.getBalance());
+		assertEquals(0, r.getCost());
+	}
 
-        doThrow(new InsufficientFundsException(fromUser, BigDecimal.ZERO))
-                .when(users).checkSufficientBalance(fromUser, amount);
+	@Test(expected = InsufficientFundsException.class)
+	public void testTransferInsufficientFunds() throws Exception {
+		BigDecimal amount = new BigDecimal("10.00");
 
-        test(1000);
-    }
+		when(s.getUser()).thenReturn(fromUser);
+		doThrow(new InsufficientFundsException(fromUser.getUsername(), BigDecimal.ZERO))
+				.when(users).checkSufficientBalance(fromUser.getUsername(), amount);
 
-    @Test
-    public void testTransfer() throws Exception {
-        BigDecimal amount = new BigDecimal("10.00");
-        BigDecimal balance = new BigDecimal("5.00");
+		test(1000);
+	}
 
-        when(users.retrieveUser(fromUser)).thenReturn(user);
-        when(user.getBalance()).thenReturn(balance);
+	@Test
+	public void testTransfer() throws Exception {
+		BigDecimal amount = new BigDecimal("10.00");
+		BigDecimal balance = new BigDecimal("5.00");
 
-        Messages.TransactionResponse r = test(1000);
+		when(s.getUser()).thenReturn(fromUser);
+		when(users.retrieveUser(fromUser.getUsername())).thenReturn(fromUser);
+		when(users.retrieveUser(toUser.getUsername())).thenReturn(toUser);
 
-        verify(users).transferFunds(fromUser, toUser, amount);
+		Messages.TransactionResponse r = test(1000);
 
-        assertEquals(toCents(balance), r.getBalance());
-        assertEquals(1000, r.getCost());
-    }
+		verify(users).transferFunds(fromUser, toUser, amount);
 
-    private Messages.TransactionResponse test(int amount) {
-        Messages.TransactionResponse r = transfer.transfer(Messages.TransferRequest.newBuilder()
-                .setFromUser(fromUser)
-                .setToUser(toUser)
-                .setAmount(amount).build());
-        assertNotNull(r);
-        return r;
-    }
+		assertEquals(toCents(balance), r.getBalance());
+		assertEquals(1000, r.getCost());
+	}
+
+	private Messages.TransactionResponse test(int amount) {
+		Messages.TransactionResponse r = transfer.transfer(Messages.TransferRequest.newBuilder()
+				.setFromUser(fromUser.getUsername())
+				.setToUser(toUser.getUsername())
+				.setAmount(amount).build());
+		assertNotNull(r);
+		return r;
+	}
 }

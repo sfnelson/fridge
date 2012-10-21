@@ -32,6 +32,11 @@ public class CreditLogEntry {
 		return new CreditLogEntry(id, amount, Type.XFER_OUT, null, to);
 	}
 
+	public static CreditLogEntry createTopup(User user, BigDecimal amount) {
+		CreditLogId id = new CreditLogId(user, new Date());
+		return new CreditLogEntry(id, amount, Type.CREDIT, null, null);
+	}
+
 	public enum Type {
 		PURCHASE("PURCHASE"),
 		CREDIT("CREDIT"),

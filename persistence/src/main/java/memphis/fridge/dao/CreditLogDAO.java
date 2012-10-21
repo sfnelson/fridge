@@ -17,7 +17,19 @@ public class CreditLogDAO {
 	@Inject
 	Provider<EntityManager> em;
 
+	@RequireTransaction
 	public void createPurchase(User user, BigDecimal amount) {
 		em.get().persist(CreditLogEntry.createPurchase(user, amount));
+	}
+
+	@RequireTransaction
+	public void createTopup(User user, BigDecimal amount) {
+		em.get().persist(CreditLogEntry.createTopup(user, amount));
+	}
+
+	@RequireTransaction
+	public void createTransfer(User fromUser, User toUser, BigDecimal toTransfer) {
+		em.get().persist(CreditLogEntry.createTransferTo(fromUser, toTransfer, toUser));
+		em.get().persist(CreditLogEntry.createTransferFrom(toUser, toTransfer, fromUser));
 	}
 }

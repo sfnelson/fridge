@@ -1,8 +1,9 @@
 package memphis.fridge.client.views;
 
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.IsWidget;
 
-import memphis.fridge.client.rpc.Account;
+import memphis.fridge.client.rpc.Messages;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -14,9 +15,21 @@ public interface AccountView extends IsWidget {
 
 	void setUsername(String username);
 
-	void setDetails(Account account);
+	void setDetails(Messages.Account account);
+
+	void setStoreDetails(boolean storeDetails);
+
+	void clearChildren();
 
 	interface Presenter {
+		void store();
+
+		void clear();
+
+		void topup(AcceptsOneWidget container);
+
+		void transfer(AcceptsOneWidget container);
+
 		void logout();
 	}
 }

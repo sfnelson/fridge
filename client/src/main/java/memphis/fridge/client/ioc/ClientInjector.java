@@ -4,6 +4,7 @@ import com.google.gwt.activity.shared.ActivityManager;
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.inject.client.GinModules;
 import com.google.gwt.inject.client.Ginjector;
+import com.google.gwt.place.shared.PlaceController;
 import com.google.gwt.place.shared.PlaceHistoryHandler;
 
 import javax.inject.Named;
@@ -20,6 +21,8 @@ public interface ClientInjector extends Ginjector {
 	PlaceHistoryHandler getHistoryHandler();
 
 	FridgeView getFridgeView();
+
+	PlaceController getPlaceController();
 
 	@Named("session-panel")
 	ActivityManager getSessionPanel();

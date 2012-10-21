@@ -8,8 +8,13 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.RenderablePanel;
+import com.google.gwt.user.client.ui.TextBox;
 
+import javax.inject.Inject;
+import memphis.fridge.client.views.ErrorView;
 import memphis.fridge.client.views.LoginView;
 
 /**
@@ -17,7 +22,7 @@ import memphis.fridge.client.views.LoginView;
  * Date: 30/09/12
  */
 public class LoginWidget extends Composite implements LoginView {
-	interface Binder extends UiBinder<RenderablePanel, LoginWidget> {
+	public interface Binder extends UiBinder<RenderablePanel, LoginWidget> {
 	}
 
 	interface Style extends CssResource {
@@ -44,13 +49,18 @@ public class LoginWidget extends Composite implements LoginView {
 	@UiField
 	Button login;
 
-	@UiField
-	Label message;
+	@Inject
+	ErrorView message;
 
 	LoginView.Presenter presenter;
 
-	public LoginWidget() {
-		initWidget(GWT.<Binder>create(Binder.class).createAndBindUi(this));
+	LoginWidget() {
+		this(GWT.<Binder>create(Binder.class));
+	}
+
+	@Inject
+	LoginWidget(Binder binder) {
+		initWidget(binder.createAndBindUi(this));
 	}
 
 	public void setPresenter(Presenter p) {
@@ -80,7 +90,7 @@ public class LoginWidget extends Composite implements LoginView {
 	@UiHandler({"username", "password"})
 	void blur(BlurEvent ev) {
 		ev.getRelativeElement().getParentElement().setClassName("");
-		clearMessage();
+		message.clearMessage();
 	}
 
 	@UiHandler({"username", "password", "login"})
@@ -97,33 +107,13 @@ public class LoginWidget extends Composite implements LoginView {
 		}
 	}
 
-	@UiHandler({"message"})
-	void messageClicked(ClickEvent ev) {
-		clearMessage();
-	}
-
-	private void showMessage(String message) {
-		this.message.setText(message);
-		this.message.setStyleName(style.show());
-		Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
-			public boolean execute() {
-				clearMessage();
-				return false;
-			}
-		}, 2000);
-	}
-
-	private void clearMessage() {
-		this.message.setStyleName("");
-	}
-
 	private void submit() {
 		if (username.getValue().length() <= 0) {
 			username.setFocus(true);
-			showMessage("Enter your username");
+			message.showMessage("Enter your username");
 		} else if (password.getValue().length() <= 0) {
 			password.setFocus(true);
-			showMessage("Enter your password");
+			message.showMessage("Enter your password");
 		} else {
 			presenter.doLogin();
 		}

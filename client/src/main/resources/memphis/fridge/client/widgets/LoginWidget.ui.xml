@@ -62,7 +62,6 @@
             -o-transition: opacity 0.5s;
             transition: opacity 0.5s;
         }
-
     </ui:style>
     <g:RenderablePanel styleName="{style.login}">
         <h1>Welcome to Fridge</h1>
@@ -82,8 +81,5 @@
                 </td>
             </tr>
         </table>
-        <div class="{style.message}">
-            <g:InlineLabel ui:field="message"></g:InlineLabel>
-        </div>
     </g:RenderablePanel>
 </ui:UiBinder>

@@ -13,7 +13,7 @@ import com.google.gwt.user.client.ui.RenderablePanel;
 import com.google.gwt.view.client.SelectionModel;
 
 import com.google.inject.Inject;
-import memphis.fridge.client.rpc.Product;
+import memphis.fridge.client.rpc.Messages;
 import memphis.fridge.client.views.ProductView;
 
 /**
@@ -27,7 +27,7 @@ public class ProductTableWidget extends Composite implements ProductView {
 	private Presenter presenter;
 
 	@UiField
-	CellList<Product> products;
+	CellList<Messages.Stock> products;
 
 	ProductTableWidget() {
 		this(GWT.<Binder>create(Binder.class));
@@ -35,7 +35,6 @@ public class ProductTableWidget extends Composite implements ProductView {
 
 	@Inject
 	ProductTableWidget(Binder binder) {
-		super();
 		initWidget(binder.createAndBindUi(this));
 	}
 
@@ -43,20 +42,20 @@ public class ProductTableWidget extends Composite implements ProductView {
 		this.presenter = presenter;
 	}
 
-	public void setProducts(List<? extends Product> products) {
+	public void setProducts(List<? extends Messages.Stock> products) {
 		this.products.setRowCount(products.size(), true);
 		this.products.setRowData(products);
 	}
 
-	void onClick(Product product) {
+	void onClick(Messages.Stock product) {
 		this.presenter.productSelected(product);
 	}
 
 	@UiFactory
-	CellList<Product> createList() {
-		return new CellList<Product>(new ProductCell(this)) {
+	CellList<Messages.Stock> createList() {
+		return new CellList<Messages.Stock>(new ProductCell(this)) {
 			@Override
-			protected void renderRowValues(SafeHtmlBuilder sb, List<Product> values, int start, SelectionModel<? super Product> selectionModel) {
+			protected void renderRowValues(SafeHtmlBuilder sb, List<Messages.Stock> values, int start, SelectionModel<? super Messages.Stock> selectionModel) {
 				super.renderRowValues(sb, values, start, selectionModel);
 			}
 		};

@@ -16,7 +16,7 @@ import memphis.fridge.client.rpc.PurchaseEntry;
  * Date: 8/10/12
  */
 public class PurchaseCell extends AbstractCell<PurchaseEntry> {
-	interface Renderer extends UiRenderer {
+	public interface Renderer extends UiRenderer {
 		void render(SafeHtmlBuilder b, PurchaseEntry value);
 	}
 

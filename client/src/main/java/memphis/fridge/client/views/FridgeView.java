@@ -15,4 +15,5 @@ public interface FridgeView extends IsWidget {
 
 	AcceptsOneWidget getProductsPanel();
 
+	ErrorView getErrorWidget();
 }

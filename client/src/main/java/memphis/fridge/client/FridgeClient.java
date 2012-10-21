@@ -2,8 +2,10 @@ package memphis.fridge.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.place.shared.Place;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import memphis.fridge.client.activities.SessionActivity;
 import memphis.fridge.client.ioc.ClientInjector;
 import memphis.fridge.client.views.FridgeView;
 
@@ -22,5 +24,8 @@ public class FridgeClient implements EntryPoint {
 		injector.getProductPanel().setDisplay(fridge.getProductsPanel());
 		RootPanel.get().add(fridge);
 		injector.getHistoryHandler().handleCurrentHistory();
+
+		Place place = SessionActivity.load();
+		injector.getPlaceController().goTo(place);
 	}
 }

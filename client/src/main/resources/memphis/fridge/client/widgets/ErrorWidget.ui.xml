@@ -1,0 +1,37 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <ui:style type="memphis.fridge.client.widgets.ErrorWidget.Style">
+        .message {
+            text-align: center;
+            padding: 1em 0;
+            height: 1em;
+            overflow: visible;
+        }
+
+        .message > span {
+            display: inline-block;
+            color: #333;
+            background-color: #ee838a;
+            border-radius: 1em;
+            border: solid 1px #dd434f;
+            padding: 0 1em;
+            font-weight: 200;
+            opacity: 0;
+            -webkit-transition: opacity 0.2s;
+            -moz-transition: opacity 0.2s;
+            -o-transition: opacity 0.2s;
+            transition: opacity 0.2s;
+        }
+
+        .message > span.show {
+            opacity: 1;
+            -webkit-transition: opacity 0.5s;
+            -moz-transition: opacity 0.5s;
+            -o-transition: opacity 0.5s;
+            transition: opacity 0.5s;
+        }
+    </ui:style>
+    <g:HTMLPanel styleName="{style.message}">
+        <g:InlineLabel ui:field="message"></g:InlineLabel>
+    </g:HTMLPanel>
+</ui:UiBinder>

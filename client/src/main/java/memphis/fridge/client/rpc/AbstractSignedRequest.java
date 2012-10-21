@@ -1,5 +1,7 @@
 package memphis.fridge.client.rpc;
 
+import java.util.logging.Logger;
+
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -73,6 +75,8 @@ abstract class AbstractSignedRequest {
 		}
 	}
 
+	abstract Logger getLog();
+
 	static abstract class Callback<H> implements RequestCallback {
 		protected final AbstractSignedRequest req;
 		protected final H handler;
@@ -91,23 +95,24 @@ abstract class AbstractSignedRequest {
 						String message = req.validateResponse(response);
 						doCallbackSuccess(handler, message, response);
 					} catch (IllegalArgumentException ex) {
-						new RuntimeException("parsing nonce response failed.\n" + ex.getMessage());
+						doCallbackFailure(handler, "Response verification failed.");
 					}
 				} else {
-					throw new RuntimeException("unexpected response from server: "
-							+ response.getStatusCode() + " " + response.getStatusText());
+					doCallbackFailure(handler, response.getStatusText() + ": " + response.getText());
 				}
 			} catch (Exception ex) {
-				doCallbackFailure(handler, ex);
+				req.getLog().warning(ex.getMessage());
+				doCallbackFailure(handler, ex.getMessage());
 			}
 		}
 
-		public void onError(Request request, Throwable exception) {
-			doCallbackFailure(handler, exception);
+		public void onError(Request request, Throwable ex) {
+			req.getLog().warning(ex.getMessage());
+			doCallbackFailure(handler, ex.getMessage());
 		}
 
 		protected abstract void doCallbackSuccess(H handler, String message, Response response);
 
-		protected abstract void doCallbackFailure(H handler, Throwable ex);
+		protected abstract void doCallbackFailure(H handler, String message);
 	}
 }

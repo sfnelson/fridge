@@ -1,11 +1,11 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:f='urn:import:memphis.fridge.client.widgets'
         >
-    <ui:style>
-    </ui:style>
     <g:HTMLPanel>
         <g:SimplePanel ui:field="account"></g:SimplePanel>
         <g:SimplePanel ui:field="products"></g:SimplePanel>
+        <f:ErrorWidget ui:field="messages"></f:ErrorWidget>
         <g:SimplePanel ui:field="user"></g:SimplePanel>
     </g:HTMLPanel>
 </ui:UiBinder>

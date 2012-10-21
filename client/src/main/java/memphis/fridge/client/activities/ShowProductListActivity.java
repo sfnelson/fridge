@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import memphis.fridge.client.events.ProductEvent;
-import memphis.fridge.client.rpc.Product;
+import memphis.fridge.client.rpc.Messages;
 import memphis.fridge.client.rpc.ProductRequest;
 import memphis.fridge.client.views.ProductView;
 
@@ -36,13 +36,13 @@ public class ShowProductListActivity extends AbstractActivity implements Product
 		panel.setWidget(view);
 
 		req.get().requestProducts(null, new ProductRequest.Handler() {
-			public void productsReady(List<? extends Product> products) {
+			public void productsReady(List<? extends Messages.Stock> products) {
 				view.setProducts(products);
 			}
 		});
 	}
 
-	public void productSelected(Product product) {
+	public void productSelected(Messages.Stock product) {
 		log.info(product.getProductCode() + " selected");
 		eventBus.fireEvent(new ProductEvent(product));
 	}

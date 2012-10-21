@@ -23,7 +23,7 @@ interface AuthenticationChecker {
 			if (session.get().isAuthenticated())
 				return invocation.proceed();
 			else
-				throw new AuthenticationException();
+				throw new AuthenticationException("requires authentication");
 		}
 	}
 
@@ -35,11 +35,11 @@ interface AuthenticationChecker {
 		}
 
 		public Object invoke(MethodInvocation invocation) throws Throwable {
-            SessionState session = this.session.get();
+			SessionState session = this.session.get();
 			if (!session.isAuthenticated())
-				throw new AuthenticationException();
+				throw new AuthenticationException("requires authentication");
 			else if (!session.isAdmin())
-				throw new AccessDeniedException(session.getUser().getUsername());
+				throw new AccessDeniedException(session.getUser());
 			else
 				return invocation.proceed();
 		}

@@ -1,18 +1,19 @@
 package memphis.fridge.client.widgets;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 
 import javax.inject.Inject;
-
-import memphis.fridge.client.rpc.Account;
+import memphis.fridge.client.rpc.Messages;
 import memphis.fridge.client.utils.NumberUtils;
 import memphis.fridge.client.views.AccountView;
 
@@ -21,19 +22,24 @@ import memphis.fridge.client.views.AccountView;
  * Date: 10/10/12
  */
 public class AccountWidget extends Composite implements AccountView {
-	interface Binder extends UiBinder<HTMLPanel, AccountWidget> {
+	public interface Binder extends UiBinder<HTMLPanel, AccountWidget> {
+	}
+
+	interface Style extends CssResource {
+		String loginPanel();
+
+		String balance();
+
+		String type();
 	}
 
 	private Presenter presenter;
 
 	@UiField
+	Style style;
+
+	@UiField
 	Label username;
-
-	@UiField
-	Label full_name;
-
-	@UiField
-	Label email;
 
 	@UiField
 	Label balance;
@@ -42,7 +48,7 @@ public class AccountWidget extends Composite implements AccountView {
 	Label type;
 
 	@UiField
-	Button logout;
+	AccountPopup popup;
 
 	AccountWidget() {
 		this(GWT.<Binder>create(Binder.class));
@@ -50,39 +56,51 @@ public class AccountWidget extends Composite implements AccountView {
 
 	@Inject
 	AccountWidget(Binder binder) {
+		sinkEvents(Event.getTypeInt(BrowserEvents.CLICK));
 		initWidget(binder.createAndBindUi(this));
+		addHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				popup.setPresenter(presenter);
+				popup.toggle();
+			}
+		}, ClickEvent.getType());
 	}
 
 	public void setPresenter(Presenter presenter) {
 		this.presenter = presenter;
 		if (presenter == null) {
 			this.username.setText("");
-			this.full_name.setText("");
-			this.email.setText("");
 			this.balance.setText("");
 		}
+		this.popup.setPresenter(presenter);
 	}
 
 	public void setUsername(String username) {
 		this.username.setText(username);
 	}
 
-	public void setDetails(Account account) {
-		this.full_name.setText(account.getRealName());
-		this.email.setText(account.getEmail());
+	@Override
+	public void setStoreDetails(boolean storeDetails) {
+		popup.stayLoggedIn.setValue(storeDetails);
+	}
+
+	@Override
+	public void clearChildren() {
+		popup.container.clear();
+	}
+
+	public void setDetails(Messages.Account account) {
 		this.balance.setText(NumberUtils.printCurrency(account.getBalance()).asString());
 
 		if (account.isAdmin()) {
-			type.setText("Admin");
+			type.setText("admin");
 		} else if (account.isGrad()) {
-			type.setText("Member");
+			type.setText("graduate");
 		} else {
-			type.setText("Guest");
+			type.setText("undergrad");
 		}
-	}
 
-	@UiHandler("logout")
-	void logoutClicked(ClickEvent ev) {
-		presenter.logout();
+		popup.setDetails(account);
 	}
 }

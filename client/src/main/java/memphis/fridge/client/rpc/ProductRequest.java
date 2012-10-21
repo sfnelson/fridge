@@ -1,11 +1,8 @@
 package memphis.fridge.client.rpc;
 
-import java.util.AbstractList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.http.client.*;
 import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
@@ -22,7 +19,7 @@ public class ProductRequest extends AbstractSignedRequest {
 	private static final Logger log = Logger.getLogger("products");
 
 	public interface Handler {
-		void productsReady(List<? extends Product> products);
+		void productsReady(List<? extends Messages.Stock> products);
 	}
 
 	public void requestProducts(String username, Handler handler) {
@@ -37,6 +34,11 @@ public class ProductRequest extends AbstractSignedRequest {
 		}
 	}
 
+	@Override
+	Logger getLog() {
+		return log;
+	}
+
 	private class Callback implements RequestCallback {
 		private final Handler handler;
 
@@ -46,37 +48,8 @@ public class ProductRequest extends AbstractSignedRequest {
 
 		public void onResponseReceived(Request request, final Response response) {
 			if (response.getStatusCode() == 200) {
-				final JsArray<ProductJS> products = ProductJS.parse(response.getText());
-				handler.productsReady(new AbstractList<ProductJS>() {
-					@Override
-					public ProductJS get(int index) {
-						return products.get(index);
-					}
-
-					@Override
-					public int size() {
-						return products.length();
-					}
-
-					public Iterator<ProductJS> iterator() {
-						final int size = products.length();
-						return new Iterator<ProductJS>() {
-							int position = 0;
-
-							public boolean hasNext() {
-								return position < size;
-							}
-
-							public ProductJS next() {
-								return products.get(position++);
-							}
-
-							public void remove() {
-								throw new UnsupportedOperationException();
-							}
-						};
-					}
-				});
+				Messages.StockResponse stock = Messages.parseStockResponse(response.getText());
+				handler.productsReady(stock.getStock());
 			} else {
 				log.info("request returned status code " + response.getStatusCode());
 			}

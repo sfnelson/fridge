@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import memphis.fridge.domain.User;
+import memphis.fridge.exceptions.AuthenticationException;
 import memphis.fridge.exceptions.FridgeException;
 import memphis.fridge.exceptions.InsufficientFundsException;
 import memphis.fridge.exceptions.InvalidUserException;
@@ -69,6 +70,7 @@ public class UserDAO {
 	 *
 	 * @throws InvalidUserException if the username already exists.
 	 */
+	@RequireTransaction
 	public void createGraduateUser(String username, String fullName, String email, String password)
 			throws InvalidUserException {
 		User user = new User(username, fullName, email, password);
@@ -82,11 +84,11 @@ public class UserDAO {
 
 		if (password == null) {
 			// user does not exist
-			throw new FridgeException("Unable to validate request.");
+			throw new AuthenticationException("Authentication failed");
 		}
 
 		if (hmac != null && hmac.equals(CryptUtils.sign(password, toValidate))) return;
-		else throw new FridgeException("Unable to validate request.");
+		else throw new AuthenticationException("Authentication failed");
 	}
 
 	public String createHMAC(String username, Object... toSign) throws FridgeException {
@@ -119,19 +121,23 @@ public class UserDAO {
 		return user.getPassword();
 	}
 
+	@RequireTransaction
 	public void addFunds(User user, BigDecimal credit) {
 		user = em.get().find(User.class, user.getUsername());
 		user.setBalance(user.getBalance().add(credit));
 		em.get().merge(user);
 	}
 
+	@RequireTransaction
 	public void removeFunds(User user, BigDecimal cost) {
 		user = em.get().find(User.class, user.getUsername());
 		user.setBalance(user.getBalance().subtract(cost));
 		em.get().merge(user);
 	}
 
-	public void transferFunds(String fromUser, String toUser, BigDecimal amount) {
-		throw new UnsupportedOperationException();
+	@RequireTransaction
+	public void transferFunds(User from, User to, BigDecimal amount) {
+		removeFunds(from, amount);
+		addFunds(to, amount);
 	}
 }

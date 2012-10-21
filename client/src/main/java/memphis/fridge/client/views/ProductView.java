@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.google.gwt.user.client.ui.IsWidget;
 
-import memphis.fridge.client.rpc.Product;
+import memphis.fridge.client.rpc.Messages;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -14,10 +14,10 @@ public interface ProductView extends IsWidget {
 
 	void setPresenter(Presenter presenter);
 
-	void setProducts(List<? extends Product> products);
+	void setProducts(List<? extends Messages.Stock> products);
 
 	interface Presenter {
-		void productSelected(Product product);
+		void productSelected(Messages.Stock product);
 	}
 
 }

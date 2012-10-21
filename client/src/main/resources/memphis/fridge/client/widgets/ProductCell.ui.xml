@@ -64,7 +64,7 @@
         }
 
     </ui:style>
-    <ui:with field="value" type="memphis.fridge.client.rpc.Product"/>
+    <ui:with field="value" type="memphis.fridge.client.rpc.Messages.Stock"/>
     <div class="{style.item}">
         <div>
             <span class="{style.desc}">

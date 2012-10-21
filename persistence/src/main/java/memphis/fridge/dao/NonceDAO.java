@@ -2,7 +2,6 @@ package memphis.fridge.dao;
 
 import java.util.Date;
 
-import com.google.inject.persist.Transactional;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
@@ -21,7 +20,7 @@ public class NonceDAO {
 	@Inject
 	Provider<EntityManager> em;
 
-	@Transactional
+	@RequireTransaction
 	public void consumeNonce(User user, String nonce, Date timestamp) {
 
 		expireOldNonces();
@@ -31,7 +30,7 @@ public class NonceDAO {
 
 		// check the timestamp
 		if (expires.before(now)) {
-			throw new AuthenticationException("Timestamp too old.");
+			throw new AuthenticationException("timestamp too old");
 		}
 
 		// check client nonce doesn't already exist (replay)
@@ -40,13 +39,14 @@ public class NonceDAO {
 		q.setParameter("nonce", nonce);
 		q.setParameter("timestamp", timestamp);
 		if (0 != q.getSingleResult()) {
-			throw new AuthenticationException("Nonce already exists, possible replay");
+			throw new AuthenticationException("nonce exists, possible replay");
 		}
 
 		// store nonce
 		em.get().persist(new Nonce(user, nonce, timestamp));
 	}
 
+	@RequireTransaction
 	private void expireOldNonces() {
 		Query q = em.get().createNativeQuery(
 				"DELETE FROM nonces WHERE timestamp < now() - interval '10 minutes';");

@@ -9,15 +9,15 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.uibinder.client.UiRenderer;
 
 import com.google.inject.Inject;
-import memphis.fridge.client.rpc.Product;
+import memphis.fridge.client.rpc.Messages;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
  * Date: 7/10/12
  */
-public class ProductCell extends AbstractCell<Product> {
-	interface Renderer extends UiRenderer {
-		void render(SafeHtmlBuilder b, Product value);
+public class ProductCell extends AbstractCell<Messages.Stock> {
+	public interface Renderer extends UiRenderer {
+		void render(SafeHtmlBuilder b, Messages.Stock value);
 	}
 
 	private final Renderer renderer;
@@ -35,12 +35,12 @@ public class ProductCell extends AbstractCell<Product> {
 	}
 
 	@Override
-	public void render(Context context, Product value, SafeHtmlBuilder sb) {
+	public void render(Context context, Messages.Stock value, SafeHtmlBuilder sb) {
 		renderer.render(sb, value);
 	}
 
 	@Override
-	public void onBrowserEvent(Context context, Element parent, Product product, NativeEvent event, ValueUpdater<Product> valueUpdater) {
+	public void onBrowserEvent(Context context, Element parent, Messages.Stock product, NativeEvent event, ValueUpdater<Messages.Stock> valueUpdater) {
 		if ("click".equals(event.getType())) {
 			this.parent.onClick(product);
 		}

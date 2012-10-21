@@ -34,8 +34,10 @@ public class ClientModule extends AbstractGinModule {
 		bind(LoginView.class).to(LoginWidget.class).asEagerSingleton();
 		bind(ProductView.class).to(ProductTableWidget.class).asEagerSingleton();
 		bind(PurchaseView.class).to(PurchaseWidget.class).asEagerSingleton();
+		bind(TopupView.class).to(TopupWidget.class);
+		bind(TransferView.class).to(TransferWidget.class);
 		bind(CryptUtils.class).to(CryptUtilsImpl.class);
-		bind(FridgeView.class).to(FridgeWidget.class);
+		bind(FridgeView.class).to(FridgeWidget.class).asEagerSingleton();
 	}
 
 	@Provides
@@ -73,6 +75,11 @@ public class ClientModule extends AbstractGinModule {
 	@Named("product-panel")
 	ActivityManager productManager(EventBus eb, ProductPanelActivityMapper mapper) {
 		return new ActivityManager(mapper, eb);
+	}
+
+	@Provides
+	ErrorView errorView(FridgeView fridge) {
+		return fridge.getErrorWidget();
 	}
 
 	@Provides

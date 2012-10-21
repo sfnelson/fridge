@@ -9,6 +9,6 @@ import java.math.BigDecimal;
 public class InsufficientFundsException extends FridgeException {
 
 	public InsufficientFundsException(String user, BigDecimal balance) {
-		super("Insufficient funds for user");
+		super(402, String.format("Insufficient funds")); // payment required
 	}
 }

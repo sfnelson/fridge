@@ -10,17 +10,17 @@ import memphis.fridge.client.utils.NumberUtils;
 public class PurchaseEntry {
 
 	@NotNull
-	private final Product product;
+	private final Messages.Stock product;
 
 	private int number;
 
-	public PurchaseEntry(@NotNull Product product, int number) {
+	public PurchaseEntry(@NotNull Messages.Stock product, int number) {
 		this.product = product;
 		this.number = number;
 	}
 
 	@NotNull
-	public Product getProduct() {
+	public Messages.Stock getProduct() {
 		return product;
 	}
 

@@ -4,7 +4,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import memphis.fridge.client.rpc.Account;
+import memphis.fridge.client.rpc.Messages;
 
 /**
  * Author: Stephen Nelson <stephen@sfnelson.org>
@@ -18,13 +18,13 @@ public class AccountEvent extends Event<AccountHandler> {
 		return eb.addHandler(TYPE, handler);
 	}
 
-	public static void fire(EventBus eb, Account account) {
+	public static void fire(EventBus eb, Messages.Account account) {
 		eb.fireEvent(new AccountEvent(account));
 	}
 
-	private final Account a;
+	private final Messages.Account a;
 
-	public AccountEvent(Account a) {
+	public AccountEvent(Messages.Account a) {
 		this.a = a;
 	}
 

@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
 import javax.inject.Inject;
+import memphis.fridge.client.views.ErrorView;
 import memphis.fridge.client.views.FridgeView;
 
 /**
@@ -27,6 +28,9 @@ public class FridgeWidget extends Composite implements FridgeView {
 
 	@UiField
 	SimplePanel products;
+
+	@UiField
+	ErrorWidget messages;
 
 	FridgeWidget() {
 		this(GWT.<Binder>create(Binder.class));
@@ -47,5 +51,9 @@ public class FridgeWidget extends Composite implements FridgeView {
 
 	public AcceptsOneWidget getProductsPanel() {
 		return products;
+	}
+
+	public ErrorView getErrorWidget() {
+		return messages;
 	}
 }
